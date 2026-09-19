@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { drop, getDesign } from "@/config/drop";
 import { canPurchase, getNow } from "@/lib/drop-state";
+import { demoCreateSession } from "@/lib/demo-store";
+import { demoMode } from "@/lib/stock";
 import { CartError, computeQuote, validateCart } from "@/lib/pricing";
 import { allowRequest, clientIp } from "@/lib/rate-limit";
 import { siteUrl } from "@/lib/env";
@@ -43,6 +45,16 @@ export async function POST(request: NextRequest) {
     throw e;
   }
   const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
+
+  // Mode démo (développement) : achat simulé, sans Stripe ni base de données.
+  if (demoMode()) {
+    try {
+      return Response.json({ url: `/demo-paiement/${demoCreateSession(cart, delivery, now).id}` });
+    } catch (e) {
+      if (e instanceof CartError) return Response.json({ error: e.message, soldOut: true }, { status: 409 });
+      throw e;
+    }
+  }
 
   // 3. Réservation atomique du stock (15 min) : impossible de survendre.
   const { data: reserved, error: reserveError } = await db().rpc("reserve_stock", {

@@ -3,17 +3,22 @@ import Link from "next/link";
 import { drop, getDesign } from "@/config/drop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { formatPieceNumber } from "@/lib/email";
+import { demoOrder, demoTotalFor } from "@/lib/demo-store";
+import { demoMode } from "@/lib/stock";
 import { db } from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Merci !", robots: { index: false } };
 
 export default async function Merci({ searchParams }: PageProps<"/merci">) {
-  const { session_id } = await searchParams;
+  const { session_id, demo } = await searchParams;
   const sessionId = typeof session_id === "string" && /^cs_[A-Za-z0-9_]+$/.test(session_id) ? session_id : null;
 
   // Le webhook Stripe peut mettre quelques secondes à enregistrer la commande.
   let items: { design_id: string; size: string; piece_number: number; total: number }[] = [];
-  if (sessionId) {
+  const demoPieces = demoMode() && typeof demo === "string" ? demoOrder(demo)?.pieces : null;
+  if (demoPieces) {
+    items = demoPieces.map((p) => ({ design_id: p.designId, size: p.size, piece_number: p.number, total: demoTotalFor(p.designId) }));
+  } else if (sessionId) {
     try {
       const { data } = await db().from("orders").select("order_items(design_id, size, piece_number)").eq("stripe_session_id", sessionId).maybeSingle();
       const designs = await db().from("designs").select("id, total_pieces");
@@ -27,6 +32,11 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
   return (
     <>
       <main id="contenu" className="mx-auto max-w-2xl px-5 py-20 text-center">
+        {demoPieces && (
+          <p role="note" className="mb-8 rounded-2xl bg-sun p-3 text-sm font-bold text-night">
+            SIMULATION : achat de test, aucun vrai paiement ni e-mail.
+          </p>
+        )}
         <h1 className="rise font-heavy text-5xl font-normal uppercase leading-none">Merci !</h1>
         <p className="mt-6 text-lg">Paiement reçu. Ton e-mail de confirmation arrive avec le numéro de ta pièce.</p>
         {items.length > 0 ? (

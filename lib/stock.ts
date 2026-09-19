@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/lib/supabase";
 import { drop, SIZES, type Size } from "@/config/drop";
+import { demoSold } from "@/lib/demo-store";
 
 export type StockCell = { total: number; sold: number; reserved: number; available: number };
 export type StockMap = Record<string, Record<Size, StockCell>>;
@@ -23,7 +24,20 @@ export function fallbackStock(): StockMap {
 
 /** Stock par design et par taille (disponible = total − vendu − réservé en cours). */
 export async function getStock(): Promise<StockMap> {
-  if (demoMode()) return fallbackStock();
+  if (demoMode()) {
+    // Stock de la config, moins les achats simulés de cette session.
+    const map = fallbackStock();
+    for (const [designId, bySize] of Object.entries(demoSold())) {
+      for (const [size, n] of Object.entries(bySize)) {
+        const cell = map[designId]?.[size as Size];
+        if (cell && n) {
+          cell.sold = n;
+          cell.available = Math.max(cell.total - n, 0);
+        }
+      }
+    }
+    return map;
+  }
   const { data, error } = await db().from("stock_status").select("*");
   if (error) throw new Error(`stock_status : ${error.message}`);
   const map: StockMap = {};

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "demo": "DEMO_NO_DB=1 NOW_OVERRIDE=2026-10-13T10:00:00-04:00 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
