@@ -11,6 +11,7 @@
   --color-muted: #a7a2a6;
 
   --color-sun: #ffd23f;
+  --color-madras: #c8231b; /* rouge du madras */
   --color-pink: #b5549f;
   --color-pink-bright: #f08ad2; /* rose lisible en texte sur fond noir */
   --color-yellow: #d7bc4b;
@@ -49,29 +50,51 @@ body {
   border-radius: 6px;
 }
 
-/* ---------- Boutons (min. 48 px, faciles à toucher) ---------- */
+/* ---------- Boutons : pilule « sticker » avec ombre dure et pastille flèche ---------- */
 .btn {
   position: relative;
   display: inline-flex;
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   overflow: hidden;
   border-radius: 999px;
   padding: 0.75rem 1.75rem;
+  font-family: var(--font-heavy);
+  font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.01em;
-  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
   text-align: center;
 }
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--color-sun); color: var(--color-night); }
-.btn-primary:hover { background: #fff; }
-.btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #3a3a41; color: #c9c5c8; cursor: not-allowed; }
+.btn:active { transform: translate(3px, 3px); }
+.btn-primary {
+  background: var(--color-sun);
+  color: var(--color-night);
+  box-shadow: 4px 4px 0 var(--color-madras);
+}
+.btn-primary:hover { background: #fff; box-shadow: 2px 2px 0 var(--color-madras); transform: translate(2px, 2px); }
+.btn-primary:active { box-shadow: 0 0 0 var(--color-madras); transform: translate(4px, 4px); }
+.btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #3a3a41; color: #c9c5c8; cursor: not-allowed; box-shadow: none; transform: none; }
 .btn-ghost { border: 2px solid var(--color-ink); color: var(--color-ink); background: transparent; }
 .btn-ghost:hover { background: rgb(244 241 236 / 0.12); }
-/* reflet qui traverse le bouton au survol */
+/* pastille ronde avec flèche, à droite du texte */
+.btn-disc {
+  display: grid;
+  height: 2rem;
+  width: 2rem;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-night);
+  color: var(--color-sun);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.btn:hover .btn-disc { transform: rotate(-45deg) scale(1.1); }
 .btn-primary::after {
   content: "";
   position: absolute;
@@ -82,23 +105,39 @@ body {
 }
 .btn-primary:not(:disabled):hover::after { animation: shine 0.8s ease; }
 
-/* ---------- Bande madras (tissu créole) ---------- */
-/* Le motif défile avec un simple translate (animé par le GPU, sans repeindre). */
-.madras { position: relative; height: 0.5rem; overflow: hidden; background-color: var(--color-night); }
+/* ---------- Vrai madras (photo du tissu, assets/madras.jpg) ---------- */
+/* Bande fine : la photo est retournée en miroir pour boucler sans couture, et défile lentement (translate = GPU). */
+.madras { position: relative; height: 0.75rem; overflow: hidden; background-color: #7a1212; }
 .madras::before {
   content: "";
   position: absolute;
-  inset: 0 -96px 0 0;
-  background-image:
-    repeating-linear-gradient(90deg, transparent 0 18px, rgb(255 210 63 / 0.9) 18px 25px, transparent 25px 40px, rgb(46 156 46 / 0.85) 40px 44px, transparent 44px 62px, rgb(226 68 56 / 0.9) 62px 71px, transparent 71px 96px),
-    repeating-linear-gradient(0deg, transparent 0 2px, rgb(40 93 178 / 0.85) 2px 4px, transparent 4px 8px);
-  animation: madras 12s linear infinite;
+  inset: 50% -406px auto 0;
+  height: 1.375rem;
+  margin-top: -0.6875rem;
+  background: url(/madras-band.webp) 0 0 / 406px 100% repeat-x;
+  animation: madras 60s linear infinite;
 }
-/* même motif en grand, très discret, pour habiller un bloc */
-.madras-plaid {
-  background-image:
-    repeating-linear-gradient(90deg, transparent 0 34px, rgb(255 210 63 / 0.08) 34px 50px, transparent 50px 80px, rgb(46 156 46 / 0.07) 80px 90px, transparent 90px 130px, rgb(226 68 56 / 0.08) 130px 150px, transparent 150px 190px),
-    repeating-linear-gradient(0deg, transparent 0 30px, rgb(40 93 178 / 0.11) 30px 44px, transparent 44px 74px, rgb(255 210 63 / 0.06) 74px 84px, transparent 84px 120px);
+/* Fond madras assombri : le texte posé dessus reste lisible. */
+.madras-bg {
+  background:
+    linear-gradient(rgb(10 10 11 / 0.6), rgb(10 10 11 / 0.78)),
+    url(/madras.webp) center / cover;
+}
+/* Cadre madras autour d'une image. */
+.madras-frame { background: url(/madras.webp) center / cover; padding: 5px; }
+/* Texte rempli avec la texture du tissu. */
+.madras-text {
+  background: url(/madras.webp) center / cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Arche de madras derrière les t-shirts du hero. */
+.madras-arch {
+  background:
+    linear-gradient(rgb(10 10 11 / 0.15), rgb(10 10 11 / 0.55)),
+    url(/madras.webp) center / cover;
+  border-radius: 999px 999px 2rem 2rem;
 }
 
 /* ---------- Titre en lettres découpées : chaque lettre « se colle » ---------- */
@@ -189,7 +228,7 @@ body {
 @keyframes reveal { from { opacity: 0; transform: translateY(2.5rem); } to { opacity: 1; transform: none; } }
 @keyframes drift { to { transform: translate(6%, 8%) scale(1.15); } }
 @keyframes shine { to { transform: translateX(130%); } }
-@keyframes madras { to { transform: translateX(-96px); } }
+@keyframes madras { to { transform: translateX(-406px); } }
 @keyframes marquee { to { transform: translateX(-50%); } }
 @keyframes tick { from { opacity: 0.25; transform: translateY(-35%); } to { opacity: 1; transform: none; } }
 @keyframes pulse-ring { 0% { opacity: 0.7; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12, 1.45); } }

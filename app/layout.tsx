@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Alfa_Slab_One, Archivo_Black, Inter } from "next/font/google";
+import { Alfa_Slab_One, Inter, Unbounded } from "next/font/google";
 import { drop } from "@/config/drop";
 import "./globals.css";
 
 const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
-// Les deux polices « affiche » ne servent qu'au titre en lettres découpées.
+// Polices « affiche » : Unbounded (titres, boutons, lettres découpées) et Alfa Slab One (lettres découpées).
 const slab = Alfa_Slab_One({ variable: "--f-slab", weight: "400", subsets: ["latin"], display: "swap" });
-const heavy = Archivo_Black({ variable: "--f-heavy", weight: "400", subsets: ["latin"], display: "swap" });
+const heavy = Unbounded({ variable: "--f-heavy", weight: "800", subsets: ["latin"], display: "swap" });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const description =

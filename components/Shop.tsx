@@ -163,24 +163,25 @@ export function Shop(props: ShopProps) {
         </div>
 
         {/* Pack */}
-        <div className="reveal madras-plaid relative mt-14 overflow-hidden rounded-[2rem] border border-line bg-surface p-6 sm:p-10">
+        <div className="reveal madras-bg relative mt-14 overflow-hidden rounded-[2.5rem] border border-white/10 p-6 sm:p-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="font-heavy text-3xl font-normal uppercase sm:text-4xl">Pack 2 designs</h3>
               <p className="mt-2 text-lg">
                 <span className="font-heavy text-4xl">{props.pack.price}</span>{" "}
-                <span className="text-muted line-through">{props.pack.regular}</span>
+                <span className="text-ink/70 line-through">{props.pack.regular}</span>
               </p>
-              <p className="mt-1 text-muted">Guadeloupean + Martinican</p>
+              <p className="mt-1 text-ink/80">Guadeloupean + Martinican</p>
             </div>
             {canBuy ? (
               <button
                 type="button"
-                className="btn btn-primary w-full sm:w-72"
+                className="btn btn-primary w-full !pr-2.5 sm:w-80"
                 disabled={!bothSelected}
                 onClick={() => add(designs.map((d) => ({ designId: d.id, size: selected[d.id]! })))}
               >
                 {bothSelected ? "Ajouter le pack" : "Choisis une taille par design"}
+                <span className="btn-disc" aria-hidden="true">+</span>
               </button>
             ) : (
               <p className="font-bold">{mode === "before" ? `Ouverture ${props.opensLabel}` : "Préco terminée"}</p>
@@ -256,8 +257,9 @@ export function Shop(props: ShopProps) {
               )}
             </div>
 
-            <button type="button" className="btn btn-primary mt-6 w-full text-lg" disabled={paying || !quote || blocked} onClick={pay}>
+            <button type="button" className="btn btn-primary mt-6 w-full !pr-2.5" disabled={paying || !quote || blocked} onClick={pay}>
               {paying ? "Redirection vers le paiement…" : "Payer en toute sécurité"}
+              {!paying && <span className="btn-disc" aria-hidden="true">→</span>}
             </button>
             {payError && <p role="alert" className="mt-3 font-bold text-orange">{payError}</p>}
             <p className="mt-3 text-center text-sm text-muted">Paiement Stripe · pièces réservées 15 min</p>
@@ -300,11 +302,12 @@ function ProductCard(props: {
 
   return (
     <article className="reveal flex flex-col" aria-labelledby={`p-${d.id}`} style={{ "--accent": d.accent } as React.CSSProperties}>
+      <div className="madras-frame rounded-[2.4rem] shadow-[0_18px_40px_-18px_rgb(200_35_27/0.55)]">
       <button
         type="button"
         aria-pressed={flipped}
         aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"} du t-shirt`}
-        className="card-tee group relative block aspect-[5/4] w-full cursor-pointer overflow-hidden rounded-[2rem] border border-line bg-surface text-left"
+        className="card-tee group relative block aspect-[5/4] w-full cursor-pointer overflow-hidden rounded-[calc(2.4rem-5px)] bg-night text-left"
         onPointerDown={(e) => { pointer.current = e.pointerType; }}
         onKeyDown={() => { pointer.current = "key"; }}
         onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
@@ -341,6 +344,7 @@ function ProductCard(props: {
           ↻
         </span>
       </button>
+      </div>
 
       <div className="mt-5 flex items-start justify-between gap-4">
         <h3 id={`p-${d.id}`} className="font-heavy text-2xl font-normal uppercase leading-tight sm:text-3xl">{d.name}</h3>
@@ -369,11 +373,11 @@ function ProductCard(props: {
                 aria-pressed={active}
                 aria-label={soldOut ? `Taille ${s}, épuisé` : `Taille ${s}`}
                 onClick={() => props.onSelect(s)}
-                className={`min-h-14 rounded-2xl border-2 px-1 py-2 text-center font-black transition duration-200 ${
+                className={`min-h-14 rounded-full border-2 px-1 py-2 text-center font-heavy transition duration-200 ${
                   active ? "-translate-y-0.5 border-ink bg-ink text-night" : "border-line bg-surface hover:-translate-y-0.5 hover:border-ink"
                 } disabled:cursor-not-allowed disabled:border-line disabled:bg-night disabled:text-muted disabled:hover:translate-y-0`}
               >
-                <span className={`block text-lg ${soldOut ? "line-through" : ""}`}>{s}</span>
+                <span className={`block text-base ${soldOut ? "line-through" : ""}`}>{s}</span>
                 {canBuy && (
                   <span className="block text-[0.7rem] font-bold leading-tight">
                     {soldOut ? "Épuisé" : left <= lowStock ? `Plus que ${left}` : " "}
@@ -392,11 +396,12 @@ function ProductCard(props: {
       {canBuy ? (
         <button
           type="button"
-          className="btn btn-primary mt-2 w-full"
+          className="btn btn-primary mt-2 w-full !pr-2.5"
           disabled={!selected || (remaining ?? 0) <= props.inCart(selected)}
           onClick={() => selected && props.onAdd(selected)}
         >
           {selected ? "Ajouter au panier" : "Choisis ta taille"}
+          <span className="btn-disc" aria-hidden="true">+</span>
         </button>
       ) : (
         <p className="btn btn-ghost mt-2 w-full" aria-disabled="true">

@@ -6,7 +6,7 @@ import { Shop, type ShopDesign } from "@/components/Shop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { canPurchase, closesAt, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
-import { estimatedDelivery, formatDateTime, formatDay, formatEuros } from "@/lib/format";
+import { formatDateTime, formatDay, formatEuros } from "@/lib/format";
 import { currentUnitPrice } from "@/lib/pricing";
 import { fallbackStock, getStock, piecesTaken, type StockMap } from "@/lib/stock";
 import { isValidAccessToken } from "@/lib/waitlist";
@@ -45,7 +45,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     available: Object.fromEntries(SIZES.map((s) => [s, stock[d.id]?.[s]?.available ?? 0])) as Record<Size, number>,
   }));
 
-  const { from, to } = estimatedDelivery();
   const opensLabel = formatDateTime(opensAt());
   const waitlistOpen = phase !== "open"; // avant ouverture ou après clôture
 
@@ -65,11 +64,11 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     <>
       <header className="sticky top-0 z-30 bg-night/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <a href="#" className="group flex items-center gap-2 font-heavy text-xl tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
+          <a href="#" className="group flex items-center gap-2 font-heavy text-lg tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
             <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-7 w-auto transition-transform duration-300 group-hover:rotate-[-12deg] group-hover:scale-110" />
             {drop.brand}
           </a>
-          <a href={cta.href} className="btn btn-primary !min-h-11 !px-5 text-sm">{mode === "open" ? "Précommander" : "Liste d'attente"}</a>
+          <a href={cta.href} className="btn btn-primary !min-h-11 !gap-2 !pl-4 !pr-2 !text-[0.65rem]">{mode === "open" ? "Précommander" : "Liste"}<span className="btn-disc !h-7 !w-7" aria-hidden="true">→</span></a>
         </div>
         <div className="madras" aria-hidden="true" />
       </header>
@@ -110,13 +109,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                 </div>
               )}
               <div className="rise mt-8 flex flex-col gap-3 sm:flex-row" style={{ "--d": "0.75s" } as React.CSSProperties}>
-                <div className="pulse-wrap flex sm:inline-flex"><a href={cta.href} className="btn btn-primary flex-1 text-lg">{cta.label}</a></div>
+                <div className="pulse-wrap flex sm:inline-flex"><a href={cta.href} className="btn btn-primary flex-1 !pr-2.5">{cta.label}<span className="btn-disc" aria-hidden="true">→</span></a></div>
                 {mode === "open" && <p className="self-center text-sm text-muted">Jusqu&apos;au {formatDay(closesAt())}</p>}
                 {mode === "before" && <p className="self-center text-sm text-muted">Ouverture {opensLabel}</p>}
               </div>
             </div>
 
             <div className="relative aspect-[6/5] w-full">
+              <div className="madras-arch enter-right absolute inset-y-[-4%] left-[20%] right-[20%] border border-white/10" aria-hidden="true" />
               <div className="enter-left absolute left-0 top-0 aspect-[5/4] w-[70%]">
                 <div className="float relative h-full w-full">
                   <Image
@@ -145,7 +145,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         </div>
 
         {/* BANDEAU */}
-        <div className="marquee border-y border-line bg-surface py-3" aria-hidden="true">
+        <div className="marquee madras-bg border-y border-line py-3" aria-hidden="true">
           <div className="marquee-track font-heavy text-lg uppercase tracking-wider sm:text-xl">
             {[0, 1].map((n) => (
               <div key={n} className="flex shrink-0 items-center">
@@ -180,39 +180,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           accessToken={earlyAccess ? token : null}
         />
 
-        {/* HISTOIRE DU NOM */}
-        <section aria-labelledby="titre-histoire" className="madras-plaid border-y border-line bg-surface px-5 py-16 sm:py-24">
-          <div className="reveal mx-auto max-w-3xl">
-            <h2 id="titre-histoire" className="font-heavy text-4xl font-normal uppercase leading-none sm:text-6xl">Pourquoi 2TIJEN ?</h2>
-            <p className="mt-6 text-lg leading-relaxed">
-              <mark className="bg-sun px-1 text-night">[TEXTE À FOURNIR]</mark> L&apos;histoire du nom 2TIJEN, son origine et ce qu&apos;il représente.
-            </p>
-          </div>
-        </section>
-
-        {/* INFOS */}
-        <section aria-labelledby="titre-infos" className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-          <h2 id="titre-infos" className="reveal font-heavy text-4xl font-normal uppercase leading-none sm:text-6xl">Bon à savoir</h2>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card title="Précommande">Ton t-shirt est fabriqué après la clôture de la préco.</Card>
-            <Card title="Livraison">
-              Entre le {formatDay(from)} et le {formatDay(to, true)}. Retrait en Guadeloupe ou envoi en métropole.
-            </Card>
-            <Card title="Paiement">Carte, Apple Pay ou Google Pay, via Stripe.</Card>
-            <Card title="Une question ?">
-              <a className="font-bold text-ink underline" href={`https://wa.me/${drop.contact.whatsapp}`}>WhatsApp</a>
-              {" · "}
-              <a className="font-bold text-ink underline" href={drop.contact.instagram}>Instagram</a>
-              {" · "}
-              <a className="font-bold text-ink underline" href={`mailto:${drop.contact.email}`}>E-mail</a>
-            </Card>
-          </ul>
-          <p className="reveal mt-6 text-sm text-muted">
-            <a className="underline hover:text-ink" href="/cgv">CGV</a> · <a className="underline hover:text-ink" href="/retours">Retours et échanges</a>
-          </p>
-
-          <details className="reveal group mt-8 rounded-3xl border border-line bg-surface p-6 open:border-ink/40">
-            <summary className="flex cursor-pointer list-none items-center justify-between text-lg font-bold">
+        {/* GUIDE DES TAILLES */}
+        <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16 sm:pb-24">
+          <details className="reveal group rounded-3xl border border-line bg-surface p-6 open:border-ink/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between font-heavy text-sm uppercase tracking-wide">
               Guide des tailles
               <span aria-hidden="true" className="text-2xl transition-transform duration-300 group-open:rotate-45">+</span>
             </summary>
@@ -257,12 +228,3 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 }
 
 const MARQUEE = ["2TIJEN", "Drop 1", "50 pièces par design", "Numérotées", "Caribbean Represent", "Gwada", "Martinik"];
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <li className="reveal rounded-3xl border border-line bg-surface p-6 transition-transform duration-300 hover:-translate-y-1 hover:border-ink/40">
-      <h3 className="font-heavy text-xl font-normal uppercase">{title}</h3>
-      <p className="mt-2 leading-relaxed text-muted">{children}</p>
-    </li>
-  );
-}

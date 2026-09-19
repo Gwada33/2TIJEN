@@ -19,14 +19,30 @@ Site one-page (mobile d'abord) pour le premier drop 2TIJEN : 2 designs de t-shir
    ```
 3. Ouvre <http://localhost:3000>.
 
-Sans compte Supabase, le site s'affiche mais **l'achat est désactivé** (bandeau jaune « Mode démo »). Pour voir le site comme s'il était ouvert, sans rien configurer, ajoute ces deux lignes dans `.env.local` :
+Sans compte Supabase, le site s'affiche mais **l'achat est désactivé** (bandeau jaune « Mode démo »).
+
+### Tester un achat tout de suite (sans compte)
+
+```bash
+npm run demo
+```
+
+Ouvre <http://localhost:3000> : le site est « ouvert » (date simulée au 13 octobre 2026, early bird actif). Choisis une taille, ajoute au panier, clique sur « Payer » : tu arrives sur une **fausse page de paiement** (bandeau jaune « SIMULATION »), puis sur la page « Merci » avec ton numéro de pièce (ex. 001/050). Le stock diminue et les numéros avancent à chaque achat. Rien n'est envoyé à Stripe, aucun e-mail n'est envoyé, et tout est remis à zéro quand tu relances le serveur. Ce mode est **ignoré en production**.
+
+Pour tester le **vrai** parcours (page Stripe, carte de test 4242…, e-mail, commande dans `/admin`), crée les comptes des parties 2.1 à 2.3 puis suis la partie 5.
+
+### Voir les autres états du site
+
+Dans `.env.local`, ajoute :
 
 ```
 DEMO_NO_DB=1
 NOW_OVERRIDE=2026-10-13T10:00:00-04:00
 ```
 
-- `DEMO_NO_DB=1` : utilise le stock de la config au lieu de la base (le paiement, lui, ne fonctionne pas).
+(`npm run demo` fait déjà ces deux réglages pour toi.)
+
+- `DEMO_NO_DB=1` : utilise le stock de la config au lieu de la base, et simule le paiement.
 - `NOW_OVERRIDE` : simule une date. Essaie `2026-10-01T12:00:00-04:00` (avant), `2026-10-12T00:00:00-04:00` (24 h avant : accès anticipé), `2026-10-13T10:00:00-04:00` (ouvert, early bird), `2026-10-15T12:00:00-04:00` (ouvert, plein tarif), `2026-10-22T12:00:00-04:00` (clos).
 - Pour tester l'accès anticipé en démo : ajoute `?acces=` suivi de 64 fois la lettre `a` à l'adresse.
 
@@ -173,4 +189,5 @@ Vérifie le calcul des prix (early bird, pack), les états par date, et directem
 - **Images** : les visuels de `public/products/` sont détourés depuis les mockups fournis (fond transparent, format WebP). Le site est noir : un t-shirt noir se lit grâce au halo de couleur et au léger contour ajoutés par le site. Remplace-les par des photos ou rendus haute définition quand tu les as, **toujours avec un fond transparent** (même nom de fichier, ou change les chemins dans `config/drop.ts`).
 - **Face / dos** : sur ordinateur le t-shirt se retourne au survol de la souris ; sur téléphone, un tap le retourne (le bouton ↻ l'indique). Au clavier : Tab puis Entrée.
 - **Animations** : elles sont définies dans `app/globals.css` (section `@keyframes`) et se coupent toutes pour les personnes qui ont activé « réduire les animations » dans leur appareil.
+- **Madras** : la texture vient de `assets/madras.jpg`. Les fichiers utilisés par le site sont `public/madras.webp` (grande texture) et `public/madras-band.webp` (bande fine, retournée en miroir pour boucler). Pour changer de texture, remplace ces deux fichiers (le second : une bande horizontale de la photo, environ 1200 × 65 px, symétrisée).
 - **Titre du hero** : le texte « CARIBBEAN REPRESENT » est dans `app/page.tsx` (composant `Ransom`) ; le slogan du site (titre de l'onglet, e-mails, pied de page) est `slogan` dans `config/drop.ts`.
