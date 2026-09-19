@@ -176,7 +176,7 @@ const FRAME_MS = 90; // vitesse du défilement des styles
 const START_MS = 700; // la première lettre se fixe après 0,7 s
 const STEP_MS = 90; // puis une lettre toutes les 90 ms
 
-export function Ransom({ text, className = "" }: { text: string; className?: string }) {
+export function Ransom({ text, tag, className = "" }: { text: string; tag?: string; className?: string }) {
   const chars = [...text.replace(/ /g, "")];
   const rot = (i: number) => ROTATIONS[(i * 5 + 2) % ROTATIONS.length];
 
@@ -207,7 +207,7 @@ export function Ransom({ text, className = "" }: { text: string; className?: str
 
   let i = 0;
   return (
-    <span role="img" aria-label={text} className={`inline-flex flex-col items-start gap-1.5 ${className}`}>
+    <span role="img" aria-label={text} className={`relative inline-flex flex-col items-start gap-1.5 ${tag ? "pb-[0.45em]" : ""} ${className}`}>
       {text.split(" ").map((word, w) => (
         <span key={w} aria-hidden="true" className="inline-flex flex-nowrap gap-[3px] whitespace-nowrap">
           {[...word].map(() => {
@@ -248,6 +248,15 @@ export function Ransom({ text, className = "" }: { text: string; className?: str
           })}
         </span>
       ))}
+      {tag && (
+        <span
+          aria-hidden="true"
+          className="ransom-tag absolute bottom-0 right-[0.4em] -rotate-6 font-script text-[1.15em] leading-none text-white"
+          style={{ animationDelay: `${(START_MS + chars.length * STEP_MS) / 1000}s` }}
+        >
+          {tag}
+        </span>
+      )}
     </span>
   );
 }

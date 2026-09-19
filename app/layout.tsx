@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Alfa_Slab_One, Inter, Unbounded } from "next/font/google";
+import { Alfa_Slab_One, Inter, Unbounded, Yellowtail } from "next/font/google";
 import { drop } from "@/config/drop";
 import "./globals.css";
 
 const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
 // Polices « affiche » : Unbounded (titres, boutons, lettres découpées) et Alfa Slab One (lettres découpées).
 const slab = Alfa_Slab_One({ variable: "--f-slab", weight: "400", subsets: ["latin"], display: "swap" });
+// Écriture manuscrite du petit mot « Drop » (comme « By 2Tijen » sur le t-shirt).
+const script = Yellowtail({ variable: "--f-script", weight: "400", subsets: ["latin"], display: "swap" });
 const heavy = Unbounded({ variable: "--f-heavy", subsets: ["latin"], display: "swap" });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -31,7 +33,7 @@ export const viewport: Viewport = { themeColor: "#0a0a0b" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${body.variable} ${slab.variable} ${heavy.variable}`}>
+    <html lang="fr" className={`${body.variable} ${slab.variable} ${heavy.variable} ${script.variable}`}>
       <body className="min-h-screen">
         <a
           href="#contenu"

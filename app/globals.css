@@ -25,6 +25,7 @@
   --font-sans: var(--font-body), system-ui, sans-serif;
   --font-slab: var(--f-slab), Georgia, serif;
   --font-heavy: var(--f-heavy), Impact, sans-serif;
+  --font-script: var(--f-script), "Brush Script MT", cursive;
 }
 
 html {
@@ -110,6 +111,12 @@ body {
   animation: slap 0.5s cubic-bezier(0.2, 1.4, 0.35, 1) both;
   animation-delay: calc(var(--i) * 25ms + 60ms);
 }
+/* Petit mot manuscrit posé sur le coin du titre : apparaît quand les lettres sont fixées. */
+.ransom-tag {
+  animation: tag-in 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  text-shadow: 0 0.06em 0 rgb(0 0 0 / 0.7), 0 0 0.25em rgb(0 0 0 / 0.5);
+}
+@keyframes tag-in { from { opacity: 0; transform: rotate(-6deg) scale(1.6); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }
 .ransom-pop { animation: pop 0.3s cubic-bezier(0.3, 1.6, 0.5, 1); }
 
 /* ---------- Retournement du t-shirt (face / dos) ---------- */

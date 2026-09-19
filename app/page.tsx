@@ -5,7 +5,7 @@ import { Ransom } from "@/components/Ransom";
 import { Shop, type ShopDesign } from "@/components/Shop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { canPurchase, closesAt, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
+import { canPurchase, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
 import { formatDateTime, formatDay, formatEuros } from "@/lib/format";
 import { currentUnitPrice } from "@/lib/pricing";
 import { fallbackStock, getStock, piecesTaken, type StockMap } from "@/lib/stock";
@@ -90,10 +90,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 md:grid-cols-[1fr_1.15fr] md:py-20">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-muted">
-              {mode === "closed" ? "Drop 1 · Terminé" : "Drop 1 · Précommande"}
+              {mode === "closed" ? "Terminé" : "Précommande"}
             </p>
             <h1 id="titre-hero" className="mt-5">
-              <Ransom text="CARIBBEAN REPRESENT" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
+              <Ransom text="CARIBBEAN REPRESENT" tag="Drop" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
             </h1>
             {mode === "closed" && <p className="mt-6 text-muted">Merci à tous, la préco est terminée.</p>}
             {countdown && (
