@@ -55,6 +55,9 @@ export const drop = {
     durationHours: 48,
   },
 
+  /** Affiche « Plus que N en M » quand il reste N pièces ou moins d'une taille. */
+  lowStockThreshold: 5,
+
   /** Nombre maximum de pièces par commande (limite les achats en masse). */
   maxPiecesPerOrder: 6,
 

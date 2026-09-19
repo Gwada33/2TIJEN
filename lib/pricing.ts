@@ -166,10 +166,3 @@ export function currentUnitPrice(piecesSold: number, now: Date): { amount: numbe
   const earlyBird = now < earlyBirdEndsAt() && piecesSold < drop.earlyBird.maxPieces;
   return { amount: earlyBird ? drop.prices.earlyBird : drop.prices.regular, earlyBird };
 }
-
-export function formatEuros(cents: number): string {
-  const euros = cents / 100;
-  return Number.isInteger(euros)
-    ? `${euros} €`
-    : `${euros.toFixed(2).replace(".", ",")} €`;
-}

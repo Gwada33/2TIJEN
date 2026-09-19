@@ -1,7 +1,7 @@
 import "server-only";
 import { Resend } from "resend";
 import { drop, getDesign } from "@/config/drop";
-import { formatEuros } from "@/lib/pricing";
+import { formatEuros } from "@/lib/format";
 import { requireEnv, siteUrl } from "@/lib/env";
 
 let resend: Resend | null = null;
