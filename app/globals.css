@@ -94,13 +94,8 @@ body {
   height: 0.5rem;
   background: #7a1212 url(/madras-band.webp) center / 406px 22px repeat-x;
 }
-/* Panneau : la texture du design (variable --madras-img), assombrie pour garder les t-shirts et le texte lisibles. */
-.madras-panel {
-  background:
-    linear-gradient(rgb(10 10 11 / 0.4), rgb(10 10 11 / 0.7)),
-    var(--madras-img, url(/madras.webp)) center / cover;
-}
-.madras-arch { border-radius: 999px 999px 1.5rem 1.5rem; }
+/* Petite pastille de la texture du design. */
+.madras-chip { background: var(--madras-img, url(/madras.webp)) center / cover; }
 /* Texte rempli avec la texture du tissu. */
 .madras-text {
   background: url(/madras.webp) center / cover;
@@ -115,7 +110,7 @@ body {
   animation: slap 0.5s cubic-bezier(0.2, 1.4, 0.35, 1) both;
   animation-delay: calc(var(--i) * 25ms + 60ms);
 }
-.ransom-tile.font-heavy { font-weight: 800; }
+.ransom-pop { animation: pop 0.3s cubic-bezier(0.3, 1.6, 0.5, 1); }
 
 /* ---------- Retournement du t-shirt (face / dos) ---------- */
 .flip-stage { perspective: 1200px; }
@@ -132,6 +127,7 @@ body {
 
 .tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.4)) drop-shadow(0 14px 18px rgb(0 0 0 / 0.5)); }
 
+@keyframes pop { from { transform: scale(1.3); } to { transform: scale(1); } }
 @keyframes slap {
   from { opacity: 0; transform: translateY(-0.8em) rotate(calc(var(--r) * 4)) scale(1.5); }
   to { opacity: 1; transform: rotate(var(--r)) scale(1); }

@@ -303,8 +303,7 @@ function ProductCard(props: {
         type="button"
         aria-pressed={flipped}
         aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"} du t-shirt`}
-        style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties}
-        className="card-tee madras-panel relative block aspect-[5/4] w-full cursor-pointer overflow-hidden rounded-3xl text-left"
+        className="card-tee relative block aspect-[5/4] w-full cursor-pointer text-left"
         onPointerDown={(e) => { pointer.current = e.pointerType; }}
         onKeyDown={() => { pointer.current = "key"; }}
         onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
@@ -319,7 +318,7 @@ function ProductCard(props: {
                 alt={flipped ? "" : d.alt.back}
                 fill
                 sizes="(min-width: 768px) 46vw, 92vw"
-                className="tee-shot object-contain p-4"
+                className="tee-shot object-contain"
               />
             </span>
             <span className="flip-face flip-face-back">
@@ -328,20 +327,25 @@ function ProductCard(props: {
                 alt={flipped ? d.alt.front : ""}
                 fill
                 sizes="(min-width: 768px) 46vw, 92vw"
-                className="tee-shot object-contain p-4"
+                className="tee-shot object-contain"
               />
             </span>
           </span>
         </span>
-        <span className="absolute left-4 top-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/80" aria-hidden="true">
+        <span className="absolute left-0 top-0 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/80" aria-hidden="true">
           50 pièces
         </span>
-        <span className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-night/70 text-lg backdrop-blur" aria-hidden="true">
+        <span className="absolute bottom-1 right-0 grid h-10 w-10 place-items-center rounded-full border border-line bg-night/70 text-lg backdrop-blur" aria-hidden="true">
           ↻
         </span>
       </button>
 
-      <div className="mt-4 flex items-baseline justify-between gap-4">
+      <span
+        className="madras-chip mt-3 block h-2 w-20 rounded-full"
+        style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties}
+        aria-hidden="true"
+      />
+      <div className="mt-3 flex items-baseline justify-between gap-4">
         <h3 id={`p-${d.id}`} className="font-heavy text-sm uppercase tracking-wide sm:text-base">{d.name}</h3>
         <p className="shrink-0 text-right">
           {props.price.regular && <span className="mr-2 text-sm text-muted line-through">{props.price.regular}</span>}

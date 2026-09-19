@@ -110,17 +110,20 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6">
+          <div className="relative aspect-[6/5] w-full">
             {drop.designs.map((d, i) => (
-              <a key={d.id} href="#pieces" className="relative block aspect-[3/4]" style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties}>
-                <span className="madras-panel madras-arch absolute inset-0" aria-hidden="true" />
+              <a
+                key={d.id}
+                href="#pieces"
+                className={`absolute aspect-[5/4] w-[72%] ${i === 0 ? "left-0 top-0" : "bottom-0 right-0"}`}
+              >
                 <Image
                   src={d.images.back}
                   alt={d.alt.back}
                   fill
                   priority={i === 0}
-                  sizes="(min-width: 768px) 30vw, 46vw"
-                  className="tee-shot translate-y-[16%] scale-[1.08] object-contain"
+                  sizes="(min-width: 768px) 38vw, 72vw"
+                  className="tee-shot object-contain"
                 />
               </a>
             ))}
