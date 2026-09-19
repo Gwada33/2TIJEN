@@ -50,81 +50,57 @@ body {
   border-radius: 6px;
 }
 
-/* ---------- Boutons : pilule « sticker » avec ombre dure et pastille flèche ---------- */
+/* Police d'affiche : poids fixe pour rester sobre (Unbounded est une police variable). */
+.font-heavy { font-weight: 600; }
+
+/* ---------- Boutons : pilule simple avec pastille flèche ---------- */
 .btn {
-  position: relative;
   display: inline-flex;
-  min-height: 3.5rem;
+  min-height: 3.25rem;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  overflow: hidden;
   border-radius: 999px;
   padding: 0.75rem 1.75rem;
   font-family: var(--font-heavy);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   text-align: center;
 }
-.btn:active { transform: translate(3px, 3px); }
-.btn-primary {
-  background: var(--color-sun);
-  color: var(--color-night);
-  box-shadow: 4px 4px 0 var(--color-madras);
-}
-.btn-primary:hover { background: #fff; box-shadow: 2px 2px 0 var(--color-madras); transform: translate(2px, 2px); }
-.btn-primary:active { box-shadow: 0 0 0 var(--color-madras); transform: translate(4px, 4px); }
-.btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #3a3a41; color: #c9c5c8; cursor: not-allowed; box-shadow: none; transform: none; }
-.btn-ghost { border: 2px solid var(--color-ink); color: var(--color-ink); background: transparent; }
-.btn-ghost:hover { background: rgb(244 241 236 / 0.12); }
-/* pastille ronde avec flèche, à droite du texte */
+.btn-primary { background: var(--color-sun); color: var(--color-night); }
+.btn-primary:hover { background: #fff; }
+.btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #2a2a30; color: #b8b4b7; cursor: not-allowed; }
+.btn-ghost { border: 1px solid var(--color-ink); color: var(--color-ink); background: transparent; }
+.btn-ghost:hover { background: rgb(244 241 236 / 0.1); }
 .btn-disc {
   display: grid;
-  height: 2rem;
-  width: 2rem;
+  height: 1.75rem;
+  width: 1.75rem;
   flex: none;
   place-items: center;
   border-radius: 999px;
   background: var(--color-night);
   color: var(--color-sun);
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1;
-  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
-.btn:hover .btn-disc { transform: rotate(-45deg) scale(1.1); }
-.btn-primary::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.75) 50%, transparent 65%);
-  transform: translateX(-130%);
-  pointer-events: none;
-}
-.btn-primary:not(:disabled):hover::after { animation: shine 0.8s ease; }
 
-/* ---------- Vrai madras (photo du tissu, assets/madras.jpg) ---------- */
-/* Bande fine : la photo est retournée en miroir pour boucler sans couture, et défile lentement (translate = GPU). */
-.madras { position: relative; height: 0.75rem; overflow: hidden; background-color: #7a1212; }
-.madras::before {
-  content: "";
-  position: absolute;
-  inset: 50% -406px auto 0;
-  height: 1.375rem;
-  margin-top: -0.6875rem;
-  background: url(/madras-band.webp) 0 0 / 406px 100% repeat-x;
-  animation: madras 60s linear infinite;
+/* ---------- Madras (photo du tissu, assets/madras.jpg) ---------- */
+/* Bande fine, fixe. La photo est retournée en miroir pour boucler sans couture. */
+.madras {
+  height: 0.5rem;
+  background: #7a1212 url(/madras-band.webp) center / 406px 22px repeat-x;
 }
-/* Fond madras assombri : le texte posé dessus reste lisible. */
-.madras-bg {
+/* Panneau : la texture du design (variable --madras-img), assombrie pour garder les t-shirts et le texte lisibles. */
+.madras-panel {
   background:
-    linear-gradient(rgb(10 10 11 / 0.6), rgb(10 10 11 / 0.78)),
-    url(/madras.webp) center / cover;
+    linear-gradient(rgb(10 10 11 / 0.4), rgb(10 10 11 / 0.7)),
+    var(--madras-img, url(/madras.webp)) center / cover;
 }
-/* Cadre madras autour d'une image. */
-.madras-frame { background: url(/madras.webp) center / cover; padding: 5px; }
+.madras-arch { border-radius: 999px 999px 1.5rem 1.5rem; }
 /* Texte rempli avec la texture du tissu. */
 .madras-text {
   background: url(/madras.webp) center / cover;
@@ -132,57 +108,14 @@ body {
   background-clip: text;
   color: transparent;
 }
-/* Arche de madras derrière les t-shirts du hero. */
-.madras-arch {
-  background:
-    linear-gradient(rgb(10 10 11 / 0.15), rgb(10 10 11 / 0.55)),
-    url(/madras.webp) center / cover;
-  border-radius: 999px 999px 2rem 2rem;
-}
 
-/* ---------- Titre en lettres découpées : chaque lettre « se colle » ---------- */
+/* ---------- Titre en lettres découpées : chaque lettre « se colle » une fois ---------- */
 .ransom-tile {
   transform: rotate(var(--r));
-  animation:
-    slap 0.6s cubic-bezier(0.2, 1.5, 0.35, 1) both,
-    bob 4.5s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 30ms + 80ms), calc(var(--i) * -380ms);
-  transition: transform 0.25s cubic-bezier(0.2, 1.5, 0.35, 1);
-  cursor: default;
+  animation: slap 0.5s cubic-bezier(0.2, 1.4, 0.35, 1) both;
+  animation-delay: calc(var(--i) * 25ms + 60ms);
 }
-.ransom-tile:hover { transform: rotate(0deg) translateY(-0.1em) scale(1.15); position: relative; z-index: 1; }
-
-/* ---------- Ambiance du hero ---------- */
-.glow {
-  position: absolute;
-  border-radius: 9999px;
-  background: radial-gradient(closest-side, var(--c), transparent);
-  opacity: 0.35;
-  pointer-events: none;
-  animation: drift 16s ease-in-out infinite alternate;
-}
-.float { animation: float 6s ease-in-out infinite; }
-.float-2 { animation: float 7s ease-in-out -2.5s infinite; }
-.enter-left { animation: enter-left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both; }
-.enter-right { animation: enter-right 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s both; }
-.rise { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--d, 0s); }
-/* anneau qui pulse autour du bouton principal (transform + opacity : pas de repeinture) */
-.pulse-wrap { position: relative; }
-.pulse-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 2px solid var(--color-sun);
-  pointer-events: none;
-  animation: pulse-ring 2.4s ease-out infinite;
-}
-.tick { animation: tick 0.35s ease-out both; }
-
-/* Bandeau qui défile */
-.marquee { overflow: hidden; }
-.marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
-.marquee:hover .marquee-track { animation-play-state: paused; }
+.ransom-tile.font-heavy { font-weight: 800; }
 
 /* ---------- Retournement du t-shirt (face / dos) ---------- */
 .flip-stage { perspective: 1200px; }
@@ -191,47 +124,18 @@ body {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.7s cubic-bezier(0.3, 1.2, 0.4, 1);
+  transition: transform 0.6s cubic-bezier(0.3, 1, 0.4, 1);
 }
 .flip-card[data-flipped="true"] { transform: rotateY(180deg); }
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .flip-face-back { transform: rotateY(180deg); }
 
-/* Halo de couleur derrière un t-shirt (le t-shirt est noir sur fond noir) */
-.tee-halo {
-  background:
-    radial-gradient(closest-side at 50% 52%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 72%);
-  transition: opacity 0.4s ease, transform 0.6s ease;
-  opacity: 0.75;
-}
-.tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.5)) drop-shadow(0 18px 24px rgb(0 0 0 / 0.65)); }
-.card-tee:hover .tee-halo, .card-tee:focus-within .tee-halo { opacity: 1; transform: scale(1.12); }
-
-/* Apparition au défilement (sans JavaScript, là où le navigateur le gère). */
-@supports (animation-timeline: view()) {
-  .reveal {
-    animation: reveal linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 30%;
-  }
-}
+.tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.4)) drop-shadow(0 14px 18px rgb(0 0 0 / 0.5)); }
 
 @keyframes slap {
-  from { opacity: 0; transform: translateY(-1.1em) rotate(calc(var(--r) * 5)) scale(1.7); }
+  from { opacity: 0; transform: translateY(-0.8em) rotate(calc(var(--r) * 4)) scale(1.5); }
   to { opacity: 1; transform: rotate(var(--r)) scale(1); }
 }
-@keyframes bob { 50% { translate: 0 -0.05em; } }
-@keyframes float { 50% { translate: 0 -0.9rem; rotate: 1.2deg; } }
-@keyframes enter-left { from { opacity: 0; transform: translateX(-4rem) rotate(-8deg); } to { opacity: 1; transform: none; } }
-@keyframes enter-right { from { opacity: 0; transform: translateX(4rem) rotate(8deg); } to { opacity: 1; transform: none; } }
-@keyframes rise { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: none; } }
-@keyframes reveal { from { opacity: 0; transform: translateY(2.5rem); } to { opacity: 1; transform: none; } }
-@keyframes drift { to { transform: translate(6%, 8%) scale(1.15); } }
-@keyframes shine { to { transform: translateX(130%); } }
-@keyframes madras { to { transform: translateX(-406px); } }
-@keyframes marquee { to { transform: translateX(-50%); } }
-@keyframes tick { from { opacity: 0.25; transform: translateY(-35%); } to { opacity: 1; transform: none; } }
-@keyframes pulse-ring { 0% { opacity: 0.7; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12, 1.45); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

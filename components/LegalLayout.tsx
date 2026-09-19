@@ -17,8 +17,8 @@ export function LegalLayout({ title, children }: { title: string; children: Reac
           Modèle à compléter et à faire valider par un professionnel (juriste, avocat ou expert-comptable) avant la mise en ligne.
           Les champs [À COMPLÉTER] doivent être remplis.
         </p>
-        <h1 className="font-heavy text-4xl font-normal uppercase leading-none">{title}</h1>
-        <div className="legal mt-8 space-y-4 leading-relaxed [&_h2]:mt-8 [&_h2]:font-heavy [&_h2]:text-xl [&_h2]:font-normal [&_ul]:list-disc [&_ul]:pl-6 [&_a]:underline">
+        <h1 className="font-heavy text-2xl uppercase tracking-wide">{title}</h1>
+        <div className="legal mt-8 space-y-4 leading-relaxed [&_h2]:mt-8 [&_h2]:font-heavy [&_h2]:text-base [&_ul]:list-disc [&_ul]:pl-6 [&_a]:underline">
           {children}
         </div>
       </main>

@@ -15,9 +15,9 @@ export type DesignConfig = {
   /** Identifiant technique stable (utilisé en base de données). Ne pas changer après le lancement. */
   id: string;
   name: string;
-  /** Couleur d'accent de la pièce (variable CSS de la palette). */
-  accent: string;
   images: { front: string; back: string };
+  /** Texture madras propre au design (fichier de public/). */
+  madras: string;
   /** Textes alternatifs (accessibilité). */
   alt: { front: string; back: string };
   /** Stock initial par taille pour ce design. */
@@ -102,7 +102,7 @@ export const drop = {
     {
       id: "guadeloupean",
       name: "Guadeloupean Represent",
-      accent: "var(--color-pink)",
+      madras: "/madras.webp",
       images: {
         front: "/products/guadeloupean-front.webp",
         back: "/products/guadeloupean-back.webp",
@@ -116,7 +116,7 @@ export const drop = {
     {
       id: "martinican",
       name: "Martinican Represent",
-      accent: "var(--color-blue)",
+      madras: "/madras-martinican.webp",
       images: {
         front: "/products/martinican-front.webp",
         back: "/products/martinican-back.webp",

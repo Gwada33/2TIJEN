@@ -15,7 +15,7 @@ type Size = "S" | "M" | "L" | "XL";
 export type ShopDesign = {
   id: string;
   name: string;
-  accent: string;
+  madras: string;
   images: { front: string; back: string };
   alt: { front: string; back: string };
   available: Record<Size, number>;
@@ -141,9 +141,9 @@ export function Shop(props: ShopProps) {
   return (
     <>
       <section id="pieces" aria-labelledby="titre-pieces" className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-        <h2 id="titre-pieces" className="reveal font-heavy text-4xl font-normal uppercase leading-none sm:text-6xl">Les 2 pièces</h2>
+        <h2 id="titre-pieces" className="font-heavy text-2xl uppercase tracking-wide sm:text-3xl">Les pièces</h2>
 
-        <div className="mt-10 grid gap-12 md:grid-cols-2 md:gap-10">
+        <div className="mt-8 grid gap-12 md:grid-cols-2 md:gap-8">
           {designs.map((d) => (
             <ProductCard
               key={d.id}
@@ -163,38 +163,35 @@ export function Shop(props: ShopProps) {
         </div>
 
         {/* Pack */}
-        <div className="reveal madras-bg relative mt-14 overflow-hidden rounded-[2.5rem] border border-white/10 p-6 sm:p-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="font-heavy text-3xl font-normal uppercase sm:text-4xl">Pack 2 designs</h3>
-              <p className="mt-2 text-lg">
-                <span className="font-heavy text-4xl">{props.pack.price}</span>{" "}
-                <span className="text-ink/70 line-through">{props.pack.regular}</span>
-              </p>
-              <p className="mt-1 text-ink/80">Guadeloupean + Martinican</p>
-            </div>
-            {canBuy ? (
-              <button
-                type="button"
-                className="btn btn-primary w-full !pr-2.5 sm:w-80"
-                disabled={!bothSelected}
-                onClick={() => add(designs.map((d) => ({ designId: d.id, size: selected[d.id]! })))}
-              >
-                {bothSelected ? "Ajouter le pack" : "Choisis une taille par design"}
-                <span className="btn-disc" aria-hidden="true">+</span>
-              </button>
-            ) : (
-              <p className="font-bold">{mode === "before" ? `Ouverture ${props.opensLabel}` : "Préco terminée"}</p>
-            )}
+        <div className="mt-12 flex flex-col gap-5 border-y border-line py-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="font-heavy text-base uppercase tracking-wide">Pack 2 pièces</h3>
+            <p className="mt-1">
+              <span className="font-heavy text-2xl">{props.pack.price}</span>{" "}
+              <span className="text-muted line-through">{props.pack.regular}</span>
+            </p>
           </div>
+          {canBuy ? (
+            <button
+              type="button"
+              className="btn btn-primary w-full !pr-2.5 sm:w-80"
+              disabled={!bothSelected}
+              onClick={() => add(designs.map((d) => ({ designId: d.id, size: selected[d.id]! })))}
+            >
+              {bothSelected ? "Ajouter le pack" : "Une taille par design"}
+              <span className="btn-disc" aria-hidden="true">+</span>
+            </button>
+          ) : (
+            <p className="text-sm font-bold uppercase tracking-wide text-muted">{mode === "before" ? `Ouverture ${props.opensLabel}` : "Préco terminée"}</p>
+          )}
         </div>
       </section>
 
       {/* Panier */}
       {canBuy && cart.length > 0 && (
         <section id="panier" aria-labelledby="titre-panier" className="mx-auto max-w-3xl scroll-mt-20 px-5 pb-28">
-          <div className="rounded-[2rem] border border-ink/40 bg-surface p-6 sm:p-8">
-            <h2 id="titre-panier" className="font-heavy text-3xl font-normal uppercase">Ton panier</h2>
+          <div className="rounded-3xl border border-line bg-surface p-6 sm:p-8">
+            <h2 id="titre-panier" className="font-heavy text-xl uppercase tracking-wide">Ton panier</h2>
 
             <ul className="mt-5 divide-y divide-line">
               {cart.map((l) => {
@@ -301,20 +298,19 @@ function ProductCard(props: {
   const allSoldOut = useMemo(() => sizes.every((s) => d.available[s] === 0), [sizes, d.available]);
 
   return (
-    <article className="reveal flex flex-col" aria-labelledby={`p-${d.id}`} style={{ "--accent": d.accent } as React.CSSProperties}>
-      <div className="madras-frame rounded-[2.4rem] shadow-[0_18px_40px_-18px_rgb(200_35_27/0.55)]">
+    <article className="flex flex-col" aria-labelledby={`p-${d.id}`}>
       <button
         type="button"
         aria-pressed={flipped}
         aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"} du t-shirt`}
-        className="card-tee group relative block aspect-[5/4] w-full cursor-pointer overflow-hidden rounded-[calc(2.4rem-5px)] bg-night text-left"
+        style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties}
+        className="card-tee madras-panel relative block aspect-[5/4] w-full cursor-pointer overflow-hidden rounded-3xl text-left"
         onPointerDown={(e) => { pointer.current = e.pointerType; }}
         onKeyDown={() => { pointer.current = "key"; }}
         onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
         onPointerLeave={(e) => { if (e.pointerType === "mouse") setFlipped(false); }}
         onClick={() => { if (pointer.current !== "mouse") setFlipped((f) => !f); }}
       >
-        <span className="tee-halo absolute inset-0" aria-hidden="true" />
         <span className="flip-stage absolute inset-0 block">
           <span className="flip-card block" data-flipped={flipped}>
             <span className="flip-face">
@@ -323,7 +319,7 @@ function ProductCard(props: {
                 alt={flipped ? "" : d.alt.back}
                 fill
                 sizes="(min-width: 768px) 46vw, 92vw"
-                className="tee-shot object-contain p-3"
+                className="tee-shot object-contain p-4"
               />
             </span>
             <span className="flip-face flip-face-back">
@@ -332,34 +328,33 @@ function ProductCard(props: {
                 alt={flipped ? d.alt.front : ""}
                 fill
                 sizes="(min-width: 768px) 46vw, 92vw"
-                className="tee-shot object-contain p-3"
+                className="tee-shot object-contain p-4"
               />
             </span>
           </span>
         </span>
-        <span className="absolute right-3 top-3 rotate-6 rounded-md bg-sun px-2 py-1 font-heavy text-xs uppercase tracking-wider text-night transition-transform duration-300 group-hover:rotate-0 group-hover:scale-110" aria-hidden="true">
-          50 ex. numérotés
+        <span className="absolute left-4 top-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/80" aria-hidden="true">
+          50 pièces
         </span>
-        <span className="absolute bottom-3 right-3 grid h-11 w-11 place-items-center rounded-full border border-line bg-night/80 text-xl backdrop-blur transition-transform duration-500 group-hover:rotate-180" aria-hidden="true">
+        <span className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-night/70 text-lg backdrop-blur" aria-hidden="true">
           ↻
         </span>
       </button>
-      </div>
 
-      <div className="mt-5 flex items-start justify-between gap-4">
-        <h3 id={`p-${d.id}`} className="font-heavy text-2xl font-normal uppercase leading-tight sm:text-3xl">{d.name}</h3>
+      <div className="mt-4 flex items-baseline justify-between gap-4">
+        <h3 id={`p-${d.id}`} className="font-heavy text-sm uppercase tracking-wide sm:text-base">{d.name}</h3>
         <p className="shrink-0 text-right">
-          <span className="block font-heavy text-2xl">{props.price.current}</span>
-          {props.price.regular && <span className="text-sm text-muted line-through">{props.price.regular}</span>}
+          {props.price.regular && <span className="mr-2 text-sm text-muted line-through">{props.price.regular}</span>}
+          <span className="font-heavy text-lg">{props.price.current}</span>
         </p>
       </div>
       {props.price.regular && props.earlyBirdLeft !== null && canBuy && (
-        <p className="mt-2 inline-block self-start rounded-full bg-pink-bright px-3 py-1 text-sm font-bold text-night">
-          Early bird : plus que {props.earlyBirdLeft} pièce{props.earlyBirdLeft > 1 ? "s" : ""} à ce prix
+        <p className="mt-1 text-xs font-bold uppercase tracking-wider text-pink-bright">
+          Early bird · plus que {props.earlyBirdLeft}
         </p>
       )}
 
-      <div className="mt-5" role="group" aria-label={`Choisir une taille, ${d.name}`}>
+      <div className="mt-4" role="group" aria-label={`Choisir une taille, ${d.name}`}>
         <div className="grid grid-cols-4 gap-2">
           {sizes.map((s) => {
             const left = d.available[s];
@@ -371,13 +366,13 @@ function ProductCard(props: {
                 type="button"
                 disabled={!canBuy || soldOut}
                 aria-pressed={active}
-                aria-label={soldOut ? `Taille ${s}, épuisé` : `Taille ${s}`}
+                aria-label={soldOut ? `Taille ${s}, épuisé` : canBuy && left <= lowStock ? `Taille ${s}, plus que ${left}` : `Taille ${s}`}
                 onClick={() => props.onSelect(s)}
-                className={`min-h-14 rounded-full border-2 px-1 py-2 text-center font-heavy transition duration-200 ${
-                  active ? "-translate-y-0.5 border-ink bg-ink text-night" : "border-line bg-surface hover:-translate-y-0.5 hover:border-ink"
-                } disabled:cursor-not-allowed disabled:border-line disabled:bg-night disabled:text-muted disabled:hover:translate-y-0`}
+                className={`min-h-14 rounded-full border px-1 py-2 text-center font-heavy transition-colors ${
+                  active ? "border-ink bg-ink text-night" : "border-line bg-surface hover:border-ink"
+                } disabled:cursor-not-allowed disabled:bg-night disabled:text-muted`}
               >
-                <span className={`block text-base ${soldOut ? "line-through" : ""}`}>{s}</span>
+                <span className={`block text-sm ${soldOut ? "line-through" : ""}`}>{s}</span>
                 {canBuy && (
                   <span className="block text-[0.7rem] font-bold leading-tight">
                     {soldOut ? "Épuisé" : left <= lowStock ? `Plus que ${left}` : " "}
@@ -387,10 +382,7 @@ function ProductCard(props: {
             );
           })}
         </div>
-        <p className="mt-2 min-h-6 text-sm font-bold text-pink-bright" aria-live="polite">
-          {canBuy && selected && remaining !== null && remaining <= lowStock && remaining > 0 && `Plus que ${remaining} en ${selected}`}
-          {canBuy && allSoldOut && "Ce design est épuisé."}
-        </p>
+        {canBuy && allSoldOut && <p className="mt-2 text-sm font-bold text-pink-bright" role="status">Ce design est épuisé.</p>}
       </div>
 
       {canBuy ? (

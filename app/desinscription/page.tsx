@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: PageProps<"/desinscription"
   return (
     <>
       <main id="contenu" className="mx-auto max-w-xl px-5 py-20 text-center">
-        <h1 className="font-heavy text-4xl font-normal uppercase leading-none">Désinscription</h1>
+        <h1 className="font-heavy text-2xl uppercase tracking-wide">Désinscription</h1>
         {fait ? (
           <p role="status" className="mt-6 text-lg">C&apos;est fait : tu ne recevras plus d&apos;e-mails de la liste d&apos;attente.</p>
         ) : valid ? (

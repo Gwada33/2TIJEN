@@ -39,7 +39,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const designs: ShopDesign[] = drop.designs.map((d) => ({
     id: d.id,
     name: d.name,
-    accent: d.accent,
+    madras: d.madras,
     images: d.images,
     alt: d.alt,
     available: Object.fromEntries(SIZES.map((s) => [s, stock[d.id]?.[s]?.available ?? 0])) as Record<Size, number>,
@@ -62,103 +62,70 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-night/80 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-line bg-night/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <a href="#" className="group flex items-center gap-2 font-heavy text-lg tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
-            <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-7 w-auto transition-transform duration-300 group-hover:rotate-[-12deg] group-hover:scale-110" />
+          <a href="#" className="flex items-center gap-2 font-heavy text-base tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
+            <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-6 w-auto" />
             {drop.brand}
           </a>
-          <a href={cta.href} className="btn btn-primary !min-h-11 !gap-2 !pl-4 !pr-2 !text-[0.65rem]">{mode === "open" ? "Précommander" : "Liste"}<span className="btn-disc !h-7 !w-7" aria-hidden="true">→</span></a>
+          <a href={cta.href} className="btn btn-ghost !min-h-10 !px-5 !text-[0.65rem]">
+            {mode === "open" ? "Précommander" : "Liste d'attente"}
+          </a>
         </div>
-        <div className="madras" aria-hidden="true" />
       </header>
 
       <main id="contenu">
         {earlyAccess && (
-          <p role="status" className="bg-pink-bright px-5 py-3 text-center font-bold text-night">
+          <p role="status" className="bg-pink-bright px-5 py-3 text-center text-sm font-bold text-night">
             Accès anticipé activé : 24 h d&apos;avance sur tout le monde.
           </p>
         )}
         {!dbOk && process.env.NODE_ENV !== "production" && (
-          <p role="alert" className="bg-sun px-5 py-3 text-center font-bold text-night">
-            Mode démo : la base de données n&apos;est pas connectée, l&apos;achat est désactivé (voir le README).
+          <p role="alert" className="bg-sun px-5 py-3 text-center text-sm font-bold text-night">
+            Mode démo : base de données non connectée, achat désactivé (voir le README).
           </p>
         )}
 
         {/* HERO */}
-        <div className="relative isolate overflow-hidden">
-          <div className="glow -left-28 top-0 h-[26rem] w-[26rem] [--c:var(--color-pink)]" aria-hidden="true" />
-          <div className="glow -right-24 bottom-0 h-[30rem] w-[30rem] [--c:var(--color-blue)]" style={{ animationDelay: "-7s" }} aria-hidden="true" />
-
-          <section aria-labelledby="titre-hero" className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 md:grid-cols-2 md:py-20">
-            <div>
-              <p className="rise mb-5 inline-block rounded-full border-2 border-ink px-3 py-1 text-sm font-bold uppercase tracking-widest">
-                {mode === "closed" ? "Drop 1 terminé" : "Précommande · Drop 1"}
-              </p>
-              <h1 id="titre-hero">
-                <Ransom text="CARIBBEAN REPRESENT" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
-              </h1>
-              {mode === "closed" && (
-                <p className="rise mt-6 max-w-md text-lg text-muted" style={{ "--d": "0.5s" } as React.CSSProperties}>
-                  Merci à tous, la préco est terminée. Inscris-toi pour le drop 2.
-                </p>
-              )}
-              {countdown && (
-                <div className="rise mt-8" style={{ "--d": "0.6s" } as React.CSSProperties}>
-                  <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />
-                </div>
-              )}
-              <div className="rise mt-8 flex flex-col gap-3 sm:flex-row" style={{ "--d": "0.75s" } as React.CSSProperties}>
-                <div className="pulse-wrap flex sm:inline-flex"><a href={cta.href} className="btn btn-primary flex-1 !pr-2.5">{cta.label}<span className="btn-disc" aria-hidden="true">→</span></a></div>
-                {mode === "open" && <p className="self-center text-sm text-muted">Jusqu&apos;au {formatDay(closesAt())}</p>}
-                {mode === "before" && <p className="self-center text-sm text-muted">Ouverture {opensLabel}</p>}
+        <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 md:grid-cols-[1fr_1.15fr] md:py-20">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-muted">
+              {mode === "closed" ? "Drop 1 · Terminé" : "Drop 1 · Précommande"}
+            </p>
+            <h1 id="titre-hero" className="mt-5">
+              <Ransom text="CARIBBEAN REPRESENT" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
+            </h1>
+            {mode === "closed" && <p className="mt-6 text-muted">Merci à tous, la préco est terminée.</p>}
+            {countdown && (
+              <div className="mt-9">
+                <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />
               </div>
+            )}
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a href={cta.href} className="btn btn-primary !pr-2.5">
+                {cta.label}
+                <span className="btn-disc" aria-hidden="true">→</span>
+              </a>
+              {mode === "before" && <p className="text-sm text-muted">Ouverture {opensLabel}</p>}
             </div>
+          </div>
 
-            <div className="relative aspect-[6/5] w-full">
-              <div className="madras-arch enter-right absolute inset-y-[-4%] left-[20%] right-[20%] border border-white/10" aria-hidden="true" />
-              <div className="enter-left absolute left-0 top-0 aspect-[5/4] w-[70%]">
-                <div className="float relative h-full w-full">
-                  <Image
-                    src={drop.designs[0].images.back}
-                    alt={drop.designs[0].alt.back}
-                    fill
-                    priority
-                    sizes="(min-width: 768px) 36vw, 66vw"
-                    className="tee-shot object-contain"
-                  />
-                </div>
-              </div>
-              <div className="enter-right absolute bottom-0 right-0 aspect-[5/4] w-[70%]">
-                <div className="float-2 relative h-full w-full">
-                  <Image
-                    src={drop.designs[1].images.back}
-                    alt={drop.designs[1].alt.back}
-                    fill
-                    sizes="(min-width: 768px) 36vw, 66vw"
-                    className="tee-shot object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* BANDEAU */}
-        <div className="marquee madras-bg border-y border-line py-3" aria-hidden="true">
-          <div className="marquee-track font-heavy text-lg uppercase tracking-wider sm:text-xl">
-            {[0, 1].map((n) => (
-              <div key={n} className="flex shrink-0 items-center">
-                {MARQUEE.map((t, i) => (
-                  <span key={i} className="flex items-center">
-                    <span className={i % 2 ? "text-sun" : "text-ink"}>{t}</span>
-                    <span className="mx-5 text-pink-bright">✦</span>
-                  </span>
-                ))}
-              </div>
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            {drop.designs.map((d, i) => (
+              <a key={d.id} href="#pieces" className="relative block aspect-[3/4]" style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties}>
+                <span className="madras-panel madras-arch absolute inset-0" aria-hidden="true" />
+                <Image
+                  src={d.images.back}
+                  alt={d.alt.back}
+                  fill
+                  priority={i === 0}
+                  sizes="(min-width: 768px) 30vw, 46vw"
+                  className="tee-shot translate-y-[16%] scale-[1.08] object-contain"
+                />
+              </a>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* PIÈCES + PACK + PANIER */}
         <Shop
@@ -181,17 +148,17 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         />
 
         {/* GUIDE DES TAILLES */}
-        <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16 sm:pb-24">
-          <details className="reveal group rounded-3xl border border-line bg-surface p-6 open:border-ink/40">
-            <summary className="flex cursor-pointer list-none items-center justify-between font-heavy text-sm uppercase tracking-wide">
+        <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16">
+          <details className="group border-y border-line py-5">
+            <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
               Guide des tailles
-              <span aria-hidden="true" className="text-2xl transition-transform duration-300 group-open:rotate-45">+</span>
+              <span aria-hidden="true" className="text-xl transition-transform duration-200 group-open:rotate-45">+</span>
             </summary>
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[20rem] text-left">
+              <table className="w-full min-w-[20rem] text-left text-sm">
                 <caption className="sr-only">Mesures des t-shirts en centimètres</caption>
                 <thead>
-                  <tr className="border-b border-line"><th className="py-2 pr-4">Taille</th><th className="py-2 pr-4">Largeur poitrine</th><th className="py-2">Longueur</th></tr>
+                  <tr className="border-b border-line text-muted"><th className="py-2 pr-4 font-medium">Taille</th><th className="py-2 pr-4 font-medium">Poitrine</th><th className="py-2 font-medium">Longueur</th></tr>
                 </thead>
                 <tbody>
                   {drop.sizeGuide.map((r) => (
@@ -199,22 +166,22 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   ))}
                 </tbody>
               </table>
-              <p className="mt-3 text-sm text-muted">Mesures à plat. [MESURES À CONFIRMER]</p>
+              <p className="mt-3 text-xs text-muted">Mesures à plat, en cm. [À CONFIRMER]</p>
             </div>
           </details>
         </section>
 
         {/* LISTE D'ATTENTE */}
-        <section id="liste" aria-labelledby="titre-liste" className="border-t border-line bg-surface px-5 py-16 sm:py-24">
-          <div className="reveal mx-auto max-w-xl">
-            <h2 id="titre-liste" className="font-heavy text-4xl font-normal uppercase leading-none sm:text-5xl">
-              {phase === "closed" ? "Drop 2 : sois prévenu" : "Liste d'attente"}
+        <section id="liste" aria-labelledby="titre-liste" className="border-t border-line bg-surface px-5 py-16 sm:py-20">
+          <div className="mx-auto max-w-md">
+            <h2 id="titre-liste" className="font-heavy text-2xl uppercase tracking-wide">
+              {phase === "closed" ? "Drop 2" : "Liste d'attente"}
             </h2>
-            <p className="mt-4 mb-8 text-lg text-muted">
+            <p className="mt-3 mb-8 text-muted">
               {phase === "closed"
-                ? "Sois le premier informé du prochain drop."
+                ? "Sois prévenu du prochain drop."
                 : waitlistOpen
-                  ? `Un lien pour précommander ${drop.earlyAccessHours} h avant tout le monde.`
+                  ? `Un lien d'accès ${drop.earlyAccessHours} h avant tout le monde.`
                   : "Sois prévenu des prochains drops."}
             </p>
             <WaitlistForm closed={phase === "closed"} />
@@ -226,5 +193,3 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     </>
   );
 }
-
-const MARQUEE = ["2TIJEN", "Drop 1", "50 pièces par design", "Numérotées", "Caribbean Represent", "Gwada", "Martinik"];

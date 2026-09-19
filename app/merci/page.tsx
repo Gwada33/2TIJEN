@@ -37,7 +37,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
             SIMULATION : achat de test, aucun vrai paiement ni e-mail.
           </p>
         )}
-        <h1 className="rise font-heavy text-5xl font-normal uppercase leading-none">Merci !</h1>
+        <h1 className="font-heavy text-3xl uppercase tracking-wide">Merci !</h1>
         <p className="mt-6 text-lg">Paiement reçu. Ton e-mail de confirmation arrive avec le numéro de ta pièce.</p>
         {items.length > 0 ? (
           <ul className="mx-auto mt-8 max-w-sm space-y-2 rounded-3xl border border-line bg-surface p-6 text-left font-bold">

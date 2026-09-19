@@ -27,7 +27,7 @@ export default async function Page({ params, searchParams }: PageProps<"/demo-pa
         </>
       ) : (
         <div className="rounded-[2rem] border border-line bg-surface p-6 sm:p-8">
-          <h1 className="font-heavy text-2xl font-normal uppercase">Paiement</h1>
+          <h1 className="font-heavy text-xl uppercase">Paiement</h1>
           <ul className="mt-5 space-y-1">
             {order.quote.lines.map((l) => (
               <li key={l.label} className="flex justify-between gap-4 text-sm">
