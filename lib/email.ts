@@ -61,7 +61,7 @@ export async function sendOrderConfirmation(o: ConfirmationOrder) {
      <p>Une question ? Réponds à cet e-mail ou écris-nous sur
         <a href="https://wa.me/${drop.contact.whatsapp}">WhatsApp</a> ou
         <a href="${drop.contact.instagram}">Instagram</a>.</p>`,
-    "Guadeloupean Represent",
+    drop.slogan,
   );
   await send(o.email, `${drop.brand} — précommande confirmée`, html);
 }

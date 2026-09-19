@@ -39,12 +39,13 @@ export function Countdown({ target, serverNow, label }: { target: string; server
 
   return (
     <div role="timer" aria-label={`${label} : ${parts.map((p) => `${p.v} ${p.l}`).join(" ")}`}>
-      <p className="mb-2 text-sm font-bold uppercase tracking-widest text-pink-deep">{label}</p>
+      <p className="mb-2 text-sm font-bold uppercase tracking-widest text-pink-bright">{label}</p>
       <div className="flex gap-2 sm:gap-3" aria-hidden="true">
         {parts.map((p) => (
-          <div key={p.l} className="min-w-[4.25rem] rounded-2xl bg-ink px-2 py-3 text-center text-white sm:min-w-[5.5rem]">
-            <div className="font-black text-3xl tabular-nums leading-none sm:text-4xl">{String(p.v).padStart(2, "0")}</div>
-            <div className="mt-1 text-[0.7rem] uppercase tracking-wider text-white/80">{p.l}</div>
+          <div key={p.l} className="min-w-[4.25rem] overflow-hidden rounded-2xl border border-line bg-surface px-2 py-3 text-center sm:min-w-[5.5rem]">
+            {/* la clé change avec la valeur : le chiffre « tombe » à chaque changement */}
+            <div key={p.v} className="tick font-heavy text-3xl tabular-nums leading-none sm:text-4xl">{String(p.v).padStart(2, "0")}</div>
+            <div className="mt-1 text-[0.7rem] uppercase tracking-wider text-muted">{p.l}</div>
           </div>
         ))}
       </div>

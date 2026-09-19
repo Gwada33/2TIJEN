@@ -39,8 +39,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const designs: ShopDesign[] = drop.designs.map((d) => ({
     id: d.id,
     name: d.name,
-    tagline: d.tagline,
-    description: d.description,
     accent: d.accent,
     images: d.images,
     alt: d.alt,
@@ -65,79 +63,102 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-30 bg-night/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <a href="#" className="flex items-center gap-2 font-black text-xl tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
-            <Image src="/logo-2t-black.png" alt="" width={28} height={28} className="h-7 w-auto" />
+          <a href="#" className="group flex items-center gap-2 font-heavy text-xl tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
+            <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-7 w-auto transition-transform duration-300 group-hover:rotate-[-12deg] group-hover:scale-110" />
             {drop.brand}
           </a>
           <a href={cta.href} className="btn btn-primary !min-h-11 !px-5 text-sm">{mode === "open" ? "Précommander" : "Liste d'attente"}</a>
         </div>
+        <div className="madras" aria-hidden="true" />
       </header>
 
       <main id="contenu">
         {earlyAccess && (
-          <p role="status" className="bg-pink-soft px-5 py-3 text-center font-bold text-ink">
-            Accès anticipé activé : tu as 24 h d&apos;avance sur tout le monde.
+          <p role="status" className="bg-pink-bright px-5 py-3 text-center font-bold text-night">
+            Accès anticipé activé : 24 h d&apos;avance sur tout le monde.
           </p>
         )}
         {!dbOk && process.env.NODE_ENV !== "production" && (
-          <p role="alert" className="bg-yellow px-5 py-3 text-center font-bold text-ink">
+          <p role="alert" className="bg-sun px-5 py-3 text-center font-bold text-night">
             Mode démo : la base de données n&apos;est pas connectée, l&apos;achat est désactivé (voir le README).
           </p>
         )}
 
         {/* HERO */}
-        <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 md:grid-cols-2 md:py-20">
-          <div>
-            <p className="mb-4 inline-block rounded-full border-2 border-ink px-3 py-1 text-sm font-bold uppercase tracking-widest">
-              {mode === "closed" ? "Drop 1 terminé" : "Précommande · Drop 1"}
-            </p>
-            <h1 id="titre-hero" className="text-4xl sm:text-6xl">
-              <Ransom text="GUADELOUPEAN REPRESENT" className="text-[clamp(1.35rem,6.2vw,3.2rem)] md:text-[min(3.1vw,2.3rem)]" />
-            </h1>
-            <p className="mt-6 max-w-md text-lg text-muted">
-              {mode === "closed"
-                ? "Merci à tous : la préco du drop 1 est terminée. Les pièces sont en fabrication. Inscris-toi pour ne pas rater le drop 2."
-                : "Deux t-shirts oversize, 50 pièces par design, chacune numérotée. Fait en Guadeloupe, pour la Guadeloupe et la diaspora."}
-            </p>
-            {countdown && (
-              <div className="mt-8">
-                <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />
-              </div>
-            )}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a href={cta.href} className="btn btn-primary text-lg">{cta.label}</a>
-              {mode === "open" && (
-                <p className="self-center text-sm text-muted">
-                  Jusqu&apos;au {formatDay(closesAt())} · livraison {drop.deliveryDelay}
+        <div className="relative isolate overflow-hidden">
+          <div className="glow -left-28 top-0 h-[26rem] w-[26rem] [--c:var(--color-pink)]" aria-hidden="true" />
+          <div className="glow -right-24 bottom-0 h-[30rem] w-[30rem] [--c:var(--color-blue)]" style={{ animationDelay: "-7s" }} aria-hidden="true" />
+
+          <section aria-labelledby="titre-hero" className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 md:grid-cols-2 md:py-20">
+            <div>
+              <p className="rise mb-5 inline-block rounded-full border-2 border-ink px-3 py-1 text-sm font-bold uppercase tracking-widest">
+                {mode === "closed" ? "Drop 1 terminé" : "Précommande · Drop 1"}
+              </p>
+              <h1 id="titre-hero">
+                <Ransom text="CARIBBEAN REPRESENT" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
+              </h1>
+              {mode === "closed" && (
+                <p className="rise mt-6 max-w-md text-lg text-muted" style={{ "--d": "0.5s" } as React.CSSProperties}>
+                  Merci à tous, la préco est terminée. Inscris-toi pour le drop 2.
                 </p>
               )}
-              {mode === "before" && <p className="self-center text-sm text-muted">Ouverture {opensLabel}</p>}
+              {countdown && (
+                <div className="rise mt-8" style={{ "--d": "0.6s" } as React.CSSProperties}>
+                  <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />
+                </div>
+              )}
+              <div className="rise mt-8 flex flex-col gap-3 sm:flex-row" style={{ "--d": "0.75s" } as React.CSSProperties}>
+                <div className="pulse-wrap flex sm:inline-flex"><a href={cta.href} className="btn btn-primary flex-1 text-lg">{cta.label}</a></div>
+                {mode === "open" && <p className="self-center text-sm text-muted">Jusqu&apos;au {formatDay(closesAt())}</p>}
+                {mode === "before" && <p className="self-center text-sm text-muted">Ouverture {opensLabel}</p>}
+              </div>
             </div>
+
+            <div className="relative aspect-[6/5] w-full">
+              <div className="enter-left absolute left-0 top-0 aspect-[5/4] w-[70%]">
+                <div className="float relative h-full w-full">
+                  <Image
+                    src={drop.designs[0].images.back}
+                    alt={drop.designs[0].alt.back}
+                    fill
+                    priority
+                    sizes="(min-width: 768px) 36vw, 66vw"
+                    className="tee-shot object-contain"
+                  />
+                </div>
+              </div>
+              <div className="enter-right absolute bottom-0 right-0 aspect-[5/4] w-[70%]">
+                <div className="float-2 relative h-full w-full">
+                  <Image
+                    src={drop.designs[1].images.back}
+                    alt={drop.designs[1].alt.back}
+                    fill
+                    sizes="(min-width: 768px) 36vw, 66vw"
+                    className="tee-shot object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* BANDEAU */}
+        <div className="marquee border-y border-line bg-surface py-3" aria-hidden="true">
+          <div className="marquee-track font-heavy text-lg uppercase tracking-wider sm:text-xl">
+            {[0, 1].map((n) => (
+              <div key={n} className="flex shrink-0 items-center">
+                {MARQUEE.map((t, i) => (
+                  <span key={i} className="flex items-center">
+                    <span className={i % 2 ? "text-sun" : "text-ink"}>{t}</span>
+                    <span className="mx-5 text-pink-bright">✦</span>
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
-          <div className="relative aspect-[6/5] w-full" aria-hidden="false">
-            <div className="absolute left-0 top-0 aspect-[5/4] w-[70%]">
-              <Image
-                src={drop.designs[0].images.back}
-                alt={drop.designs[0].alt.back}
-                fill
-                priority
-                sizes="(min-width: 768px) 36vw, 66vw"
-                className="object-contain"
-              />
-            </div>
-            <div className="absolute bottom-0 right-0 aspect-[5/4] w-[70%]">
-              <Image
-                src={drop.designs[1].images.back}
-                alt={drop.designs[1].alt.back}
-                fill
-                sizes="(min-width: 768px) 36vw, 66vw"
-                className="object-contain"
-              />
-            </div>
-          </div>
-        </section>
+        </div>
 
         {/* PIÈCES + PACK + PANIER */}
         <Shop
@@ -160,46 +181,41 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         />
 
         {/* HISTOIRE DU NOM */}
-        <section aria-labelledby="titre-histoire" className="bg-cream px-5 py-16 sm:py-24">
-          <div className="mx-auto max-w-3xl">
-            <h2 id="titre-histoire" className="font-black text-4xl uppercase leading-none sm:text-6xl">Pourquoi 2TIJEN ?</h2>
+        <section aria-labelledby="titre-histoire" className="madras-plaid border-y border-line bg-surface px-5 py-16 sm:py-24">
+          <div className="reveal mx-auto max-w-3xl">
+            <h2 id="titre-histoire" className="font-heavy text-4xl font-normal uppercase leading-none sm:text-6xl">Pourquoi 2TIJEN ?</h2>
             <p className="mt-6 text-lg leading-relaxed">
-              <mark className="bg-yellow/60 px-1">[TEXTE À FOURNIR]</mark> L&apos;histoire du nom 2TIJEN, son origine et ce qu&apos;il représente.
+              <mark className="bg-sun px-1 text-night">[TEXTE À FOURNIR]</mark> L&apos;histoire du nom 2TIJEN, son origine et ce qu&apos;il représente.
             </p>
           </div>
         </section>
 
-        {/* RÉASSURANCE */}
+        {/* INFOS */}
         <section aria-labelledby="titre-infos" className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-          <h2 id="titre-infos" className="font-black text-4xl uppercase leading-none sm:text-6xl">Bon à savoir</h2>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Card title="Précommande">
-              Ton t-shirt est fabriqué après la clôture de la préco : c&apos;est une précommande, pas un achat en stock.
+          <h2 id="titre-infos" className="reveal font-heavy text-4xl font-normal uppercase leading-none sm:text-6xl">Bon à savoir</h2>
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card title="Précommande">Ton t-shirt est fabriqué après la clôture de la préco.</Card>
+            <Card title="Livraison">
+              Entre le {formatDay(from)} et le {formatDay(to, true)}. Retrait en Guadeloupe ou envoi en métropole.
             </Card>
-            <Card title="Livraison estimée">
-              Entre le {formatDay(from)} et le {formatDay(to, true)} ({drop.deliveryDelay}).
-              {" "}Remise en main propre en Guadeloupe ou envoi en métropole.
-            </Card>
-            <Card title="Paiement sécurisé">
-              Paiement par carte, Apple Pay ou Google Pay, via Stripe. Nous ne voyons jamais ta carte.
-            </Card>
-            <Card title="Pièces numérotées">
-              Chaque t-shirt reçoit son numéro (ex. 012/050), noté sur ta commande.
-            </Card>
+            <Card title="Paiement">Carte, Apple Pay ou Google Pay, via Stripe.</Card>
             <Card title="Une question ?">
-              <a className="font-bold underline" href={`https://wa.me/${drop.contact.whatsapp}`}>WhatsApp</a>
+              <a className="font-bold text-ink underline" href={`https://wa.me/${drop.contact.whatsapp}`}>WhatsApp</a>
               {" · "}
-              <a className="font-bold underline" href={drop.contact.instagram}>Instagram</a>
+              <a className="font-bold text-ink underline" href={drop.contact.instagram}>Instagram</a>
               {" · "}
-              <a className="font-bold underline" href={`mailto:${drop.contact.email}`}>E-mail</a>
-            </Card>
-            <Card title="Conditions">
-              <a className="font-bold underline" href="/cgv">CGV</a> · <a className="font-bold underline" href="/retours">Retours et échanges</a>
+              <a className="font-bold text-ink underline" href={`mailto:${drop.contact.email}`}>E-mail</a>
             </Card>
           </ul>
+          <p className="reveal mt-6 text-sm text-muted">
+            <a className="underline hover:text-ink" href="/cgv">CGV</a> · <a className="underline hover:text-ink" href="/retours">Retours et échanges</a>
+          </p>
 
-          <details className="mt-8 rounded-3xl border-2 border-ink p-6">
-            <summary className="cursor-pointer text-lg font-bold">Guide des tailles</summary>
+          <details className="reveal group mt-8 rounded-3xl border border-line bg-surface p-6 open:border-ink/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between text-lg font-bold">
+              Guide des tailles
+              <span aria-hidden="true" className="text-2xl transition-transform duration-300 group-open:rotate-45">+</span>
+            </summary>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[20rem] text-left">
                 <caption className="sr-only">Mesures des t-shirts en centimètres</caption>
@@ -212,23 +228,23 @@ export default async function Home({ searchParams }: PageProps<"/">) {
                   ))}
                 </tbody>
               </table>
-              <p className="mt-3 text-sm text-muted">Mesures à plat, coupe oversize. [MESURES À CONFIRMER]</p>
+              <p className="mt-3 text-sm text-muted">Mesures à plat. [MESURES À CONFIRMER]</p>
             </div>
           </details>
         </section>
 
         {/* LISTE D'ATTENTE */}
-        <section id="liste" aria-labelledby="titre-liste" className="bg-pink-soft px-5 py-16 sm:py-24">
-          <div className="mx-auto max-w-xl">
-            <h2 id="titre-liste" className="font-black text-4xl uppercase leading-none sm:text-5xl">
+        <section id="liste" aria-labelledby="titre-liste" className="border-t border-line bg-surface px-5 py-16 sm:py-24">
+          <div className="reveal mx-auto max-w-xl">
+            <h2 id="titre-liste" className="font-heavy text-4xl font-normal uppercase leading-none sm:text-5xl">
               {phase === "closed" ? "Drop 2 : sois prévenu" : "Liste d'attente"}
             </h2>
-            <p className="mt-4 mb-8 text-lg">
+            <p className="mt-4 mb-8 text-lg text-muted">
               {phase === "closed"
-                ? "Laisse ton e-mail pour être le premier informé du prochain drop."
+                ? "Sois le premier informé du prochain drop."
                 : waitlistOpen
-                  ? `Les inscrits reçoivent un lien pour précommander ${drop.earlyAccessHours} h avant tout le monde.`
-                  : "La préco est ouverte. Inscris-toi pour être prévenu des prochains drops."}
+                  ? `Un lien pour précommander ${drop.earlyAccessHours} h avant tout le monde.`
+                  : "Sois prévenu des prochains drops."}
             </p>
             <WaitlistForm closed={phase === "closed"} />
           </div>
@@ -240,10 +256,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   );
 }
 
+const MARQUEE = ["2TIJEN", "Drop 1", "50 pièces par design", "Numérotées", "Caribbean Represent", "Gwada", "Martinik"];
+
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <li className="rounded-3xl border border-line bg-white p-6">
-      <h3 className="text-xl font-black">{title}</h3>
+    <li className="reveal rounded-3xl border border-line bg-surface p-6 transition-transform duration-300 hover:-translate-y-1 hover:border-ink/40">
+      <h3 className="font-heavy text-xl font-normal uppercase">{title}</h3>
       <p className="mt-2 leading-relaxed text-muted">{children}</p>
     </li>
   );

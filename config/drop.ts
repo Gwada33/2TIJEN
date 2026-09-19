@@ -15,10 +15,6 @@ export type DesignConfig = {
   /** Identifiant technique stable (utilisé en base de données). Ne pas changer après le lancement. */
   id: string;
   name: string;
-  /** Petite phrase sous le nom. */
-  tagline: string;
-  /** PLACEHOLDER : description à fournir. */
-  description: string;
   /** Couleur d'accent de la pièce (variable CSS de la palette). */
   accent: string;
   images: { front: string; back: string };
@@ -30,7 +26,7 @@ export type DesignConfig = {
 
 export const drop = {
   brand: "2TIJEN",
-  slogan: "Guadeloupean Represent",
+  slogan: "Caribbean Represent",
   /** Nom du drop, affiché dans les e-mails et l'admin. */
   name: "Drop 1",
 
@@ -106,8 +102,6 @@ export const drop = {
     {
       id: "guadeloupean",
       name: "Guadeloupean Represent",
-      tagline: "Lettres découpées, couleurs du pays.",
-      description: "[TEXTE À FOURNIR] T-shirt oversize noir, logo 2T brodé devant, lettres découpées multicolores au dos.",
       accent: "var(--color-pink)",
       images: {
         front: "/products/guadeloupean-front.webp",
@@ -122,8 +116,6 @@ export const drop = {
     {
       id: "martinican",
       name: "Martinican Represent",
-      tagline: "Lettres découpées, toutes les nuances de bleu.",
-      description: "[TEXTE À FOURNIR] T-shirt oversize noir, logo 2T bleu ciel, lettres découpées bleues.",
       accent: "var(--color-blue)",
       images: {
         front: "/products/martinican-front.webp",

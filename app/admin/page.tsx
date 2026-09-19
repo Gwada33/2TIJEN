@@ -20,7 +20,7 @@ export default async function AdminPage() {
   }
   const totals = new Map(drop.designs.map((d) => [d.id, Object.values(d.stock).reduce((a, b) => a + b, 0)]));
   const fmt = (iso: string) => new Date(iso).toLocaleString("fr-FR", { timeZone: "America/Guadeloupe", dateStyle: "short", timeStyle: "short" });
-  const box = "rounded-3xl bg-white p-6 shadow-sm";
+  const box = "rounded-3xl border border-line bg-surface p-6";
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
@@ -34,14 +34,14 @@ export default async function AdminPage() {
       </header>
 
       {data.needsRefund > 0 && (
-        <p role="alert" className="rounded-3xl bg-orange p-5 font-bold text-white">
+        <p role="alert" className="rounded-3xl bg-orange p-5 font-bold text-night">
           {data.needsRefund} commande(s) payée(s) alors que le stock était épuisé : à rembourser dans Stripe.
         </p>
       )}
 
       <section aria-labelledby="seuil" className={box}>
         <h2 id="seuil" className="text-xl font-black">Seuil de fabrication</h2>
-        <p className={`mt-2 rounded-2xl p-4 text-lg font-black ${data.thresholdReached ? "bg-green/20" : "bg-yellow/40"}`}>
+        <p className={`mt-2 rounded-2xl p-4 text-lg font-black ${data.thresholdReached ? "bg-green/20" : "bg-sun/25"}`}>
           {data.thresholdReached ? "✅ Seuil atteint : la fabrication peut être lancée." : "⏳ Seuil non atteint."}
         </p>
         <ul className="mt-3 space-y-1">
@@ -100,7 +100,7 @@ export default async function AdminPage() {
         <h2 id="orders" className="text-xl font-black">Commandes ({data.orders.length})</h2>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[60rem] text-left text-sm">
-            <thead><tr className="border-b-2 border-ink"><th className="py-2 pr-3">Date</th><th className="pr-3">Client</th><th className="pr-3">Livraison</th><th className="pr-3">Pièces</th><th className="pr-3">Montant</th><th>Statut</th></tr></thead>
+            <thead><tr className="border-b-2 border-ink/60"><th className="py-2 pr-3">Date</th><th className="pr-3">Client</th><th className="pr-3">Livraison</th><th className="pr-3">Pièces</th><th className="pr-3">Montant</th><th>Statut</th></tr></thead>
             <tbody>
               {data.orders.map((o) => (
                 <tr key={o.id} className="border-b border-line align-top">

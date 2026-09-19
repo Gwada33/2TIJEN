@@ -27,10 +27,10 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
   return (
     <>
       <main id="contenu" className="mx-auto max-w-2xl px-5 py-20 text-center">
-        <h1 className="font-black text-5xl uppercase leading-none">Merci !</h1>
-        <p className="mt-6 text-lg">Ton paiement est bien reçu. Tu vas recevoir un e-mail de confirmation avec le numéro de ta pièce.</p>
+        <h1 className="rise font-heavy text-5xl font-normal uppercase leading-none">Merci !</h1>
+        <p className="mt-6 text-lg">Paiement reçu. Ton e-mail de confirmation arrive avec le numéro de ta pièce.</p>
         {items.length > 0 ? (
-          <ul className="mx-auto mt-8 max-w-sm space-y-2 rounded-3xl bg-pink-soft p-6 text-left font-bold">
+          <ul className="mx-auto mt-8 max-w-sm space-y-2 rounded-3xl border border-line bg-surface p-6 text-left font-bold">
             {items.map((i) => (
               <li key={`${i.design_id}${i.piece_number}`} className="flex justify-between gap-4">
                 <span>{getDesign(i.design_id)?.name} · {i.size}</span>
@@ -39,9 +39,9 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
             ))}
           </ul>
         ) : (
-          <p className="mt-6 text-muted">Ta commande est en cours d&apos;enregistrement : ton numéro de pièce arrive par e-mail dans quelques instants.</p>
+          <p className="mt-6 text-muted">Commande en cours d&apos;enregistrement : ton numéro arrive par e-mail dans quelques instants.</p>
         )}
-        <p className="mt-8 text-muted">Précommande : fabrication après la clôture. Délai annoncé : {drop.deliveryDelay}.</p>
+        <p className="mt-8 text-muted">Précommande · délai annoncé : {drop.deliveryDelay}.</p>
         <Link href="/" className="btn btn-primary mt-10">Retour au site</Link>
       </main>
       <SiteFooter />

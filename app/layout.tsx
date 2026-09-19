@@ -10,7 +10,7 @@ const heavy = Archivo_Black({ variable: "--f-heavy", weight: "400", subsets: ["l
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const description =
-  "Précommande du premier drop 2TIJEN : t-shirts oversize numérotés, 50 pièces par design. Guadeloupean Represent.";
+  "Précommande du premier drop 2TIJEN : t-shirts oversize numérotés, 50 pièces par design. Caribbean Represent.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: `${drop.brand} — ${drop.slogan}`, description, images: ["/og.png"] },
 };
 
-export const viewport: Viewport = { themeColor: "#ffffff" };
+export const viewport: Viewport = { themeColor: "#0a0a0b" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-screen">
         <a
           href="#contenu"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-sun focus:px-4 focus:py-2 focus:text-night"
         >
           Aller au contenu
         </a>

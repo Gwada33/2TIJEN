@@ -96,7 +96,7 @@ Aucune clé secrète n'est dans le code ni envoyée au navigateur.
 
 ## 4. Modifier les règles du drop
 
-**Tout est dans `config/drop.ts`** : dates d'ouverture et de clôture, prix, early bird, pack, stocks par taille, frais d'envoi, seuils de production, liens Instagram/TikTok/WhatsApp, e-mail de contact, tableau des tailles, textes des pièces. Les montants sont en **centimes** (35 € = `3500`). Les dates sont au format `2026-10-12T18:00:00-04:00` (le `-04:00` est l'heure de la Guadeloupe).
+**Tout est dans `config/drop.ts`** : dates d'ouverture et de clôture, prix, early bird, pack, stocks par taille, frais d'envoi, seuils de production, liens Instagram/TikTok/WhatsApp, e-mail de contact, tableau des tailles, noms et images des pièces. Les montants sont en **centimes** (35 € = `3500`). Les dates sont au format `2026-10-12T18:00:00-04:00` (le `-04:00` est l'heure de la Guadeloupe).
 
 Après une modification : `git commit` + `git push` et Vercel republie le site tout seul.
 
@@ -105,7 +105,7 @@ Après une modification : `git commit` + `git push` et Vercel republie le site t
 ### Valeurs provisoires à remplacer (cherche « PLACEHOLDER » ou `[À COMPLÉTER]`)
 
 - Heures d'ouverture (18 h 00) et de clôture (23 h 59), frais d'envoi métropole (5,90 €), tableau des tailles, e-mail, numéro WhatsApp, liens Instagram et TikTok.
-- Textes `[TEXTE À FOURNIR]` : histoire du nom (`app/page.tsx`), description des pièces (`config/drop.ts`).
+- Texte `[TEXTE À FOURNIR]` : histoire du nom (`app/page.tsx`).
 - Pages légales (`app/cgv`, `app/mentions-legales`, `app/confidentialite`, `app/retours`) : modèles à compléter et **à faire valider par un professionnel** avant la mise en ligne (une bannière le rappelle sur chaque page ; retire-la de `components/LegalLayout.tsx` une fois validées).
 
 ---
@@ -170,4 +170,7 @@ Vérifie le calcul des prix (early bird, pack), les états par date, et directem
 - **Seuil de fabrication** : l'admin compte les *commandes payées* (45 au total, 20 par design). Si tu préfères compter des *pièces*, dis-le, c'est un petit changement dans `lib/admin-data.ts`.
 - **Réservation** : 15 minutes. Stripe impose 30 minutes minimum pour la page de paiement ; un paiement tardif est accepté si le stock est encore là, sinon remboursé automatiquement.
 - **Erreur d'écriture sur le visuel Guadeloupe** : le mockup affiche « GUADLOUPEAN » (sans E). À vérifier avant la production.
-- **Images** : les visuels de `public/products/` sont recadrés depuis les mockups fournis. Remplace-les par des photos ou rendus haute définition quand tu les as (même nom de fichier, ou change les chemins dans `config/drop.ts`).
+- **Images** : les visuels de `public/products/` sont détourés depuis les mockups fournis (fond transparent, format WebP). Le site est noir : un t-shirt noir se lit grâce au halo de couleur et au léger contour ajoutés par le site. Remplace-les par des photos ou rendus haute définition quand tu les as, **toujours avec un fond transparent** (même nom de fichier, ou change les chemins dans `config/drop.ts`).
+- **Face / dos** : sur ordinateur le t-shirt se retourne au survol de la souris ; sur téléphone, un tap le retourne (le bouton ↻ l'indique). Au clavier : Tab puis Entrée.
+- **Animations** : elles sont définies dans `app/globals.css` (section `@keyframes`) et se coupent toutes pour les personnes qui ont activé « réduire les animations » dans leur appareil.
+- **Titre du hero** : le texte « CARIBBEAN REPRESENT » est dans `app/page.tsx` (composant `Ransom`) ; le slogan du site (titre de l'onglet, e-mails, pied de page) est `slogan` dans `config/drop.ts`.

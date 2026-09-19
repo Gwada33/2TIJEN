@@ -2,7 +2,7 @@
  * Titre en lettres « découpées » façon ransom note, repris des dos des t-shirts.
  * À utiliser avec parcimonie (hero uniquement). Le texte lisible est porté par
  * aria-label ; les lettres décoratives sont masquées aux lecteurs d'écran.
- * Toutes les paires fond/texte respectent un contraste ≥ 3:1 (grand texte).
+ * Chaque lettre « se colle » à l'arrivée puis flotte légèrement (voir globals.css).
  */
 const TILES = [
   { bg: "#d7bc4b", fg: "#0a0a0b", font: "font-slab" },
@@ -26,12 +26,13 @@ export function Ransom({ text, className = "" }: { text: string; className?: str
           {[...word].map((ch) => {
             const tile = TILES[(i * 3 + 1) % TILES.length];
             const rot = ROTATIONS[(i * 5 + 2) % ROTATIONS.length];
+            const index = i;
             i += 1;
             return (
               <span
-                key={i}
-                className={`${tile.font} inline-block rounded-[3px] px-[0.18em] py-[0.02em] leading-[1.1] shadow-sm`}
-                style={{ background: tile.bg, color: tile.fg, transform: `rotate(${rot}deg)` }}
+                key={index}
+                className={`${tile.font} ransom-tile inline-block rounded-[3px] px-[0.18em] py-[0.02em] leading-[1.1] shadow-[0_3px_0_rgb(0_0_0/0.55)]`}
+                style={{ background: tile.bg, color: tile.fg, ["--r" as string]: `${rot}deg`, ["--i" as string]: index }}
               >
                 {ch}
               </span>
