@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 /**
  * Titre en lettres « découpées » façon ransom note, comme sur les t-shirts.
  *
- * Chaque lettre est un morceau de papier différent : forme découpée au hasard (ciseaux,
- * flèche, ovale, coins coupés…), police, couleur, bordure fine (contour blanc ou double
- * filet), casse et angle. À l'arrivée, tout change en boucle, puis chaque lettre se fixe
- * sur un style tiré au hasard, de gauche à droite. Le résultat est différent à chaque visite.
+ * Chaque lettre est un morceau de papier : forme découpée, police, couleur, bordure fine
+ * (contour blanc ou double filet), casse et angle. À l'arrivée, tous ces réglages changent
+ * AU HASARD en boucle, puis chaque lettre se fixe de gauche à droite sur son style FINAL,
+ * toujours le même (tableau FINAL_STYLES, aux couleurs du t-shirt Guadeloupean Represent).
  * Si la personne a demandé « réduire les animations », le titre s'affiche directement fini.
  *
  * Le texte lisible est porté par aria-label ; les lettres décoratives sont masquées aux
@@ -34,6 +34,34 @@ const PAPERS = [
 ];
 const INKS = ["#0a0a0b", "#ffffff", "#ece8df", "#d7bc4b", "#285db2", "#8f3a7d", "#b8512c", "#2e9c2e", "#e2443a", "#141416"];
 const BORDERS = ["#ffffff", "#ece8df", "#0a0a0b", "#d7bc4b", "#acdaed", "#f6dcea"];
+
+/**
+ * Style final de chaque lettre (dans l'ordre du texte, espaces ignorés) : mêmes couleurs
+ * que les lettres du t-shirt Guadeloupean Represent. Les indices de police renvoient à FONTS.
+ */
+type FinalStyle = { paper: string; ink: string; ring?: string; double?: boolean; font: number; lower?: boolean; shape?: string };
+const FINAL_STYLES: FinalStyle[] = [
+  // CARIBBEAN
+  { paper: "#f6dcea", ink: "#8f3a7d", ring: "#b5549f", font: 0 },
+  { paper: "#b8512c", ink: "#ffffff", font: 6 },
+  { paper: "#d7bc4b", ink: "#0a0a0b", ring: "#ffffff", font: 0 },
+  { paper: "#ece8df", ink: "#0a0a0b", font: 2 },
+  { paper: "#7b3fa0", ink: "#ffffff", ring: "#ece8df", double: true, font: 1 },
+  { paper: "#285db2", ink: "#ffffff", font: 0 },
+  { paper: "#ece8df", ink: "#b5549f", ring: "#b5549f", font: 6 },
+  { paper: "#40959b", ink: "#ffffff", ring: "#ffffff", font: 2 },
+  { paper: "#d7bc4b", ink: "#0a0a0b", font: 0 },
+  // REPRESENT
+  { paper: "#2e9c2e", ink: "#ffffff", ring: "#ece8df", double: true, font: 6 },
+  { paper: "#d7bc4b", ink: "#7b3fa0", font: 0 },
+  { paper: "#285db2", ink: "#ece8df", font: 2 },
+  { paper: "#d7bc4b", ink: "#0a0a0b", ring: "#ffffff", font: 6, lower: true },
+  { paper: "#acdaed", ink: "#0a0a0b", font: 0, lower: true, shape: "ellipse(50% 50% at 50% 50%)" },
+  { paper: "#40959b", ink: "#ffffff", font: 6 },
+  { paper: "#ece8df", ink: "#0a0a0b", ring: "#d7bc4b", font: 0 },
+  { paper: "#7b3fa0", ink: "#ffffff", font: 1 },
+  { paper: "#2e9c2e", ink: "#ffffff", ring: "#ece8df", font: 6 },
+];
 
 type Tile = {
   ch: string;
@@ -127,6 +155,22 @@ function randomTile(r: Rand, ch: string, rot: number): Tile {
   return { ch: letter, font, fg, shape: randomShape(r), rings, ringStep, rot, scale: between(r, 0.94, 1.06) };
 }
 
+/** Tuile finale : le style du tableau ; forme découpée fixe (graine par lettre). Au-delà du tableau, on boucle. */
+function finalTile(ch: string, index: number, rot: number): Tile {
+  const f = FINAL_STYLES[index % FINAL_STYLES.length];
+  const rings = f.ring ? (f.double ? [f.ring, f.paper, f.ring, f.paper] : [f.ring, f.paper]) : [f.paper];
+  return {
+    ch: f.lower ? ch.toLowerCase() : ch.toUpperCase(),
+    font: FONTS[f.font],
+    fg: f.ink,
+    shape: f.shape ?? randomShape(seeded(100 + index * 31)),
+    rings,
+    ringStep: f.double ? 0.05 : 0.06,
+    rot,
+    scale: 1,
+  };
+}
+
 const ROTATIONS = [-3.5, 2.5, -1.5, 3.5, -2.5, 1.5, -1, 3];
 const FRAME_MS = 90; // vitesse du défilement des styles
 const START_MS = 700; // la première lettre se fixe après 0,7 s
@@ -136,16 +180,13 @@ export function Ransom({ text, className = "" }: { text: string; className?: str
   const chars = [...text.replace(/ /g, "")];
   const rot = (i: number) => ROTATIONS[(i * 5 + 2) % ROTATIONS.length];
 
-  // Premier rendu (serveur) : styles fixés par une graine.
-  const [tiles, setTiles] = useState<Tile[]>(() => {
-    const r = seeded(2024);
-    return chars.map((ch, i) => randomTile(r, ch, rot(i)));
-  });
+  // Premier rendu (serveur) : directement le style final, sans hasard.
+  const finals = chars.map((ch, i) => finalTile(ch, i, rot(i)));
+  const [tiles, setTiles] = useState<Tile[]>(finals);
   const [settled, setSettled] = useState(0);
 
   useEffect(() => {
-    // Ensuite : vrai hasard, différent à chaque visite.
-    const finals = chars.map((ch, i) => randomTile(Math.random, ch, rot(i)));
+    // Pendant l'animation : styles tirés au hasard, puis chaque lettre se fixe sur son style final.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const id = setTimeout(() => {
         setTiles(finals);
