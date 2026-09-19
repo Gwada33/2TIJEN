@@ -184,7 +184,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <h2 id="titre-infos" className="font-black text-4xl uppercase leading-none sm:text-6xl">Bon à savoir</h2>
           <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Card title="Précommande">
-              Ton t-shirt est fabriqué après la clôture, à partir de {drop.production.minOrders} commandes. Si le minimum n&apos;est pas atteint, tu es remboursé.
+              Ton t-shirt est fabriqué après la clôture de la préco : c&apos;est une précommande, pas un achat en stock.
             </Card>
             <Card title="Livraison estimée">
               Entre le {formatDay(from)} et le {formatDay(to, true)} ({drop.deliveryDelay}).
