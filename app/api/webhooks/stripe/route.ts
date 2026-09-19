@@ -58,6 +58,7 @@ async function fulfil(session: Stripe.Checkout.Session) {
 
   const delivery = session.metadata?.delivery === "shipping" ? "shipping" : "pickup";
   const shipping = session.collected_information?.shipping_details;
+  const address = shipping?.address ?? session.customer_details?.address ?? null;
   const email = session.customer_details?.email;
   if (!email) throw new Error(`Session ${session.id} sans e-mail`);
   const name = shipping?.name ?? session.customer_details?.name ?? null;
@@ -71,7 +72,7 @@ async function fulfil(session: Stripe.Checkout.Session) {
     p_name: name,
     p_phone: session.customer_details?.phone ?? null,
     p_delivery: delivery,
-    p_address: shipping?.address ?? null,
+    p_address: delivery === "shipping" ? address : null,
     p_amount_total: session.amount_total ?? 0,
     p_shipping_amount: session.total_details?.amount_shipping ?? 0,
   });

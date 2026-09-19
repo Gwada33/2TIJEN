@@ -23,8 +23,8 @@ async function fresh() {
 
 const reserve = (items: unknown[]) =>
   db.query<{ reservation_id: string; item_ids: string[]; pieces_before: number }>(
-    "select * from reserve_stock($1::jsonb, 15)",
-    [JSON.stringify(items)],
+    "select * from reserve_stock($1::jsonb, 15, $2::text[])",
+    [JSON.stringify(items), ["a", "b"]],
   );
 
 const complete = (session: string, reservation: string) =>

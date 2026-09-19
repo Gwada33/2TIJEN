@@ -5,6 +5,7 @@ import { db } from "@/lib/supabase";
 
 export type AdminOrder = {
   id: string;
+  drop_name: string | null;
   created_at: string;
   name: string | null;
   email: string;
@@ -26,7 +27,8 @@ export async function loadAdminData() {
   for (const r of [orders, designs, stock, waitlist]) if (r.error) throw new Error(r.error.message);
 
   const allOrders = (orders.data ?? []) as AdminOrder[];
-  const paid = allOrders.filter((o) => o.status === "paid");
+  // Les compteurs ne portent que sur le drop en cours (la liste, elle, montre tout).
+  const paid = allOrders.filter((o) => o.status === "paid" && o.drop_name === drop.name);
 
   // Par design : nombre de commandes qui le contiennent et de pièces vendues.
   const perDesign = drop.designs.map((d) => {

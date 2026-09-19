@@ -13,14 +13,16 @@ export function clientIp(request: Request): string {
  * laisse passer plutôt que de bloquer les vrais clients.
  */
 export async function allowRequest(key: string, windowSeconds: number, max: number): Promise<boolean> {
-  const { data, error } = await db().rpc("rate_limit_hit", {
-    p_key: key,
-    p_window_seconds: windowSeconds,
-    p_max: max,
-  });
-  if (error) {
-    console.error("rate_limit_hit", error.message);
+  try {
+    const { data, error } = await db().rpc("rate_limit_hit", {
+      p_key: key,
+      p_window_seconds: windowSeconds,
+      p_max: max,
+    });
+    if (error) throw new Error(error.message);
+    return data === true;
+  } catch (e) {
+    console.error("rate_limit_hit", e);
     return true;
   }
-  return data === true;
 }

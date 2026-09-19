@@ -156,11 +156,12 @@ revoke all on stock_status from anon, authenticated;
 
 -- Réserve des pièces pour N minutes.
 -- p_items : [{"design_id":"guadeloupean","size":"M","qty":2}, ...]
+-- p_scope : les designs du drop en cours (pour compter l'early bird drop par drop)
 -- Retourne l'id de réservation, les ids des lignes (dans l'ordre des pièces)
 -- et le nombre de pièces déjà vendues/réservées AVANT cette réservation
 -- (sert à calculer l'early bird côté serveur).
 -- Lève l'erreur 'SOLD_OUT:<design>:<taille>' si le stock est insuffisant.
-create or replace function reserve_stock(p_items jsonb, p_minutes int)
+create or replace function reserve_stock(p_items jsonb, p_minutes int, p_scope text[])
 returns table (reservation_id uuid, item_ids bigint[], pieces_before int)
 language plpgsql
 security definer
@@ -187,7 +188,8 @@ begin
     end if;
   end loop;
 
-  select coalesce(sum(sold + reserved), 0)::int into v_before from stock_status;
+  select coalesce(sum(sold + reserved), 0)::int into v_before
+  from stock_status where design_id = any(p_scope);
 
   insert into reservations (expires_at)
   values (now() + make_interval(mins => p_minutes))

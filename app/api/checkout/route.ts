@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
   const { data: reserved, error: reserveError } = await db().rpc("reserve_stock", {
     p_items: cart.map((l) => ({ design_id: l.designId, size: l.size, qty: l.qty })),
     p_minutes: drop.reservationMinutes,
+    p_scope: drop.designs.map((d) => d.id),
   });
   if (reserveError) {
     const soldOut = /SOLD_OUT:([^:]+):(\w+)/.exec(reserveError.message);

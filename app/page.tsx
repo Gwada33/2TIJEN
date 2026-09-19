@@ -8,18 +8,8 @@ import { WaitlistForm } from "@/components/WaitlistForm";
 import { canPurchase, closesAt, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
 import { estimatedDelivery, formatDateTime, formatDay, formatEuros } from "@/lib/format";
 import { currentUnitPrice } from "@/lib/pricing";
-import { getStock, piecesTaken, type StockMap } from "@/lib/stock";
+import { fallbackStock, getStock, piecesTaken, type StockMap } from "@/lib/stock";
 import { isValidAccessToken } from "@/lib/waitlist";
-
-/** Stock initial de la config, utilisé seulement si la base n'est pas joignable. */
-function fallbackStock(): StockMap {
-  return Object.fromEntries(
-    drop.designs.map((d) => [
-      d.id,
-      Object.fromEntries(SIZES.map((s) => [s, { total: d.stock[s], sold: 0, reserved: 0, available: d.stock[s] }])),
-    ]),
-  ) as StockMap;
-}
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const params = await searchParams;

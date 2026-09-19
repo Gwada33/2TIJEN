@@ -42,8 +42,10 @@ export async function endSession() {
 }
 
 export async function isAdmin(): Promise<boolean> {
-  if (!process.env.ADMIN_SESSION_SECRET || !process.env.ADMIN_PASSWORD) return false;
+  // On lit les cookies EN PREMIER : cela force Next.js à rendre /admin à chaque
+  // visite (sinon la page serait figée à la construction du site).
   const value = (await cookies()).get(COOKIE)?.value;
+  if (!process.env.ADMIN_SESSION_SECRET || !process.env.ADMIN_PASSWORD) return false;
   if (!value) return false;
   const [expires, signature] = value.split(".");
   if (!expires || !signature || !safeEqual(signature, sign(expires))) return false;
