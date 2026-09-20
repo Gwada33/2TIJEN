@@ -11,13 +11,9 @@ export function SiteFooter() {
   return (
     <footer className="bg-night text-ink">
       <div className="madras" aria-hidden="true" />
-      <div className="px-5 pb-8 pt-14">
+      <div className="px-5 pb-8 pt-10">
         <div className="mx-auto max-w-6xl">
-          <p aria-hidden="true" className="madras-text select-none font-heavy text-[clamp(3.5rem,20vw,11rem)] leading-[0.9] tracking-tight">
-            2TIJEN
-          </p>
-
-          <div className="mt-10 flex flex-col gap-6 border-t border-line pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-3">
               <a className={social} href={drop.contact.instagram} {...external}>Instagram</a>
               <a className={social} href={drop.contact.tiktok} {...external}>TikTok</a>

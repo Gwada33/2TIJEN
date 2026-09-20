@@ -34,7 +34,7 @@ export function BuyBox(props: {
   return (
     <div>
       <div className={needSize ? "shake outline outline-1 outline-offset-4 outline-orange" : ""} role="group" aria-label={`Choisir une taille, ${d.name}`}>
-        <div className="grid grid-cols-4 divide-x divide-line border border-line">
+        <div className="grid grid-cols-4 gap-2">
           {sizes.map((s) => {
             const left = d.available[s];
             const soldOut = canBuy && left === 0;
@@ -50,7 +50,7 @@ export function BuyBox(props: {
                   props.onSelect(s);
                   setNeedSize(false);
                 }}
-                className={`min-h-14 px-1 py-2 text-center font-heavy transition-colors ${active ? "bg-ink text-night" : "hover:bg-surface-2"} disabled:cursor-not-allowed disabled:bg-night disabled:text-muted`}
+                className={`min-h-14 px-1 py-2 text-center font-heavy transition-colors ${active ? "bg-ink text-night" : "bg-surface hover:bg-surface-2"} disabled:cursor-not-allowed disabled:bg-surface disabled:text-muted disabled:opacity-60`}
               >
                 <span className={`block text-sm ${soldOut ? "line-through" : ""}`}>{s}</span>
                 {canBuy && (

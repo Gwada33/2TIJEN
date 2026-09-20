@@ -33,7 +33,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       {/* HERO : sur mobile, l'ordre est titre → pièces → compte à rebours et bouton */}
       <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl gap-x-12 gap-y-10 px-5 py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:py-20">
         <div className="md:self-end">
-          <p className="mb-4 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-muted">T-shirts oversize numérotés</p>
           <h1 id="titre-hero">
             <Ransom text="CARIBBEAN REPRESENT" tag="Drop" className="text-[clamp(1.4rem,8vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
           </h1>

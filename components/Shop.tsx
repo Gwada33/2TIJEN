@@ -48,7 +48,7 @@ export function Shop(props: ShopProps) {
 
       {/* Pack (seulement quand la vente est ouverte) */}
       {canBuy && (
-        <div className="mt-12 flex flex-col gap-5 border-y border-line py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-5 py-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-heavy text-base uppercase tracking-wide">Pack 2 pièces</h3>
             <p className="mt-1">
@@ -117,7 +117,7 @@ function ProductCard(props: {
           aria-pressed={flipped}
           aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"}`}
           onClick={() => setFlipped((f) => !f)}
-          className="absolute bottom-2 right-0 grid h-11 w-11 place-items-center border border-line bg-night/70 text-base backdrop-blur"
+          className="absolute bottom-2 right-0 grid h-11 w-11 place-items-center bg-night/70 text-base backdrop-blur"
         >
           <span aria-hidden="true">↻</span>
         </button>
