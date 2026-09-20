@@ -28,5 +28,6 @@ export async function loadGallery(): Promise<GalleryPhoto[]> {
       console.error("Instagram", e);
     }
   }
-  return drop.gallery;
+  // Galerie de l'accueil : la liste générale, sinon les photos de toutes les pièces.
+  return drop.gallery.length ? drop.gallery : drop.designs.flatMap((d) => d.photos);
 }

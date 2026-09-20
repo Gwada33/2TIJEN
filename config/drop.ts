@@ -11,19 +11,6 @@
 export const SIZES = ["S", "M", "L", "XL"] as const;
 export type Size = (typeof SIZES)[number];
 
-export type DesignConfig = {
-  /** Identifiant technique stable (utilisé en base de données). Ne pas changer après le lancement. */
-  id: string;
-  name: string;
-  images: { front: string; back: string };
-  /** Texture madras propre au design (fichier de public/). */
-  madras: string;
-  /** Textes alternatifs (accessibilité). */
-  alt: { front: string; back: string };
-  /** Stock initial par taille pour ce design. */
-  stock: Record<Size, number>;
-};
-
 export type GalleryPhoto = {
   /** Fichier de public/ (ex. "/shooting/01.jpg") ou adresse d'image. */
   src: string;
@@ -32,6 +19,24 @@ export type GalleryPhoto = {
   href?: string;
   /** Format de la tuile : "4/5" (portrait, par défaut), "1/1", "3/4"… */
   ratio?: string;
+};
+
+export type DesignConfig = {
+  /** Identifiant technique stable (utilisé en base de données). Ne pas changer après le lancement. */
+  id: string;
+  name: string;
+  images: { front: string; back: string };
+  /** Texture madras propre au design (fichier de public/). */
+  madras: string;
+  /**
+   * Photos de shooting PORTÉ de cette pièce, affichées sur sa page produit (mêmes champs que `gallery`).
+   * PLACEHOLDER : vide = tuiles « photo à venir ». Fichiers dans public/shooting/.
+   */
+  photos: GalleryPhoto[];
+  /** Textes alternatifs (accessibilité). */
+  alt: { front: string; back: string };
+  /** Stock initial par taille pour ce design. */
+  stock: Record<Size, number>;
 };
 
 export const drop = {
@@ -135,6 +140,7 @@ export const drop = {
       id: "guadeloupean",
       name: "Guadeloupean Represent",
       madras: "/madras.webp",
+      photos: [],
       images: {
         front: "/products/guadeloupean-front.webp",
         back: "/products/guadeloupean-back.webp",
@@ -149,6 +155,7 @@ export const drop = {
       id: "martinican",
       name: "Martinican Represent",
       madras: "/madras-martinican.webp",
+      photos: [],
       images: {
         front: "/products/martinican-front.webp",
         back: "/products/martinican-back.webp",

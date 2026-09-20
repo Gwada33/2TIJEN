@@ -197,7 +197,6 @@ export function CartDrawer() {
                 {!c.paying && <span className="btn-disc" aria-hidden="true">→</span>}
               </button>
               {c.payError && <p role="alert" className="mt-3 text-sm font-bold text-orange">{c.payError}</p>}
-              <p className="mt-3 text-center text-xs text-muted">Paiement Stripe · pièces réservées 15 min</p>
             </div>
           </>
         )}

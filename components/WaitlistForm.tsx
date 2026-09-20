@@ -57,7 +57,7 @@ export function WaitlistForm({ closed }: { closed: boolean }) {
       <label className="flex items-start gap-3 text-xs leading-snug text-muted">
         <input type="checkbox" name="consent" required className="mt-0.5 h-5 w-5 shrink-0 accent-sun" />
         <span>
-          J&apos;accepte que 2TIJEN utilise mon e-mail (et mon numéro s&apos;il est renseigné) pour m&apos;informer des drops et m&apos;envoyer mon accès anticipé. Désinscription possible à tout moment.
+          J&apos;accepte de recevoir les infos des drops (e-mail, et WhatsApp si renseigné). Désinscription à tout moment.
           <a className="text-ink underline" href="/confidentialite"> Confidentialité</a>.
         </span>
       </label>
