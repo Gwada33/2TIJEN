@@ -132,7 +132,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
                     <div className="madras-chip h-1.5" style={{ "--madras-img": `url(${d.madras})` } as React.CSSProperties} aria-hidden="true" />
                     <div className="flex items-center gap-4 p-4 sm:gap-6 sm:p-5">
                       <div className="relative h-20 w-24 shrink-0 sm:h-24 sm:w-28">
-                        <Image src={d.images.back} alt="" fill sizes="112px" className="tee-shot object-contain" />
+                        <Image src={d.images.back} alt="" fill sizes="112px" className="object-contain" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-heavy text-xs uppercase tracking-wide sm:text-sm">{d.name}</p>

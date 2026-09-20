@@ -62,7 +62,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
             { src: design.images.front, alt: design.alt.front },
           ].map((v) => (
             <div key={v.src} className="relative aspect-[4/5] w-[86%] shrink-0 snap-center bg-surface md:w-auto">
-              <Image src={v.src} alt={v.alt} fill priority sizes="(min-width: 768px) 30vw, 86vw" className="tee-shot object-contain p-2" />
+              <Image src={v.src} alt={v.alt} fill priority sizes="(min-width: 768px) 30vw, 86vw" className="object-contain p-2" />
             </div>
           ))}
           {worn.map((photo, i) => (
