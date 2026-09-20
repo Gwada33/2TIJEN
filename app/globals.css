@@ -98,6 +98,12 @@ body {
   height: 0.5rem;
   background: #7a1212 url(/madras-band.webp) center / 406px 22px repeat-x;
 }
+/* Panneau de texture assombri (tuiles provisoires de la galerie). */
+.madras-panel {
+  background:
+    linear-gradient(rgb(10 10 11 / 0.45), rgb(10 10 11 / 0.75)),
+    var(--madras-img, url(/madras.webp)) center / cover;
+}
 /* Petite pastille de la texture du design. */
 .madras-chip { background: var(--madras-img, url(/madras.webp)) center / cover; }
 /* Texte rempli avec la texture du tissu. */

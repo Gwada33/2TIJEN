@@ -24,6 +24,16 @@ export type DesignConfig = {
   stock: Record<Size, number>;
 };
 
+export type GalleryPhoto = {
+  /** Fichier de public/ (ex. "/shooting/01.jpg") ou adresse d'image. */
+  src: string;
+  alt: string;
+  /** Lien vers la publication Instagram / TikTok (sinon : la page Instagram). */
+  href?: string;
+  /** Format de la tuile : "4/5" (portrait, par défaut), "1/1", "3/4"… */
+  ratio?: string;
+};
+
 export const drop = {
   brand: "2TIJEN",
   slogan: "Caribbean Represent",
@@ -91,6 +101,15 @@ export const drop = {
     /** Adresse d'expédition des e-mails (domaine à valider chez Resend). */
     emailFrom: "2TIJEN <commande@2tijen.example>",
   },
+
+  /**
+   * Galerie « porté » : les photos de shooting.
+   * PLACEHOLDER : tant que la liste est vide, la galerie affiche des tuiles « photo à venir ».
+   * Pour ajouter tes photos : mets les fichiers dans public/shooting/ puis liste-les ici, par exemple
+   *   { src: "/shooting/01.jpg", alt: "Look Guadeloupean, porté à Pointe-à-Pitre", href: "https://www.instagram.com/p/XXXX/" }
+   * Ou branche directement ton Instagram (variable INSTAGRAM_ACCESS_TOKEN, voir le README).
+   */
+  gallery: [] as GalleryPhoto[],
 
   /**
    * Stripe Tax (désactivé par défaut : variable STRIPE_AUTOMATIC_TAX=1, voir le README).

@@ -4,6 +4,7 @@ import { Countdown } from "@/components/Countdown";
 import { Ransom } from "@/components/Ransom";
 import { CartProvider, type CartDesign } from "@/components/CartProvider";
 import { CartButton, CartDrawer } from "@/components/CartDrawer";
+import { Gallery } from "@/components/Gallery";
 import { Shop } from "@/components/Shop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WaitlistForm } from "@/components/WaitlistForm";
@@ -159,6 +160,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           lowStock={drop.lowStockThreshold}
           deliveryEstimate={`${formatDay(estimatedDelivery().from)} – ${formatDay(estimatedDelivery().to, true)}`}
         />
+
+        {/* GALERIE PORTÉ */}
+        <Gallery />
 
         {/* GUIDE DES TAILLES */}
         <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16">

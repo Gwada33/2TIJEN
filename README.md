@@ -121,6 +121,23 @@ Le client tape son code dans le panier : le site le vérifie auprès de Stripe, 
 
 Deux codes de test existent dans ton compte Stripe de test : `BIENVENUE10` (-10 %) et `MERCI5` (-5 €). **Si tu avais déjà créé la base Supabase**, relance `supabase/schema.sql` dans le SQL Editor (il ajoute les colonnes du code promo sans rien effacer).
 
+### 2.7 Galerie « porté » (photos de shooting)
+
+La section « Porté » affiche tes photos de shooting, avec les boutons Instagram et TikTok. **Tant que tu n'as pas fourni de photos, elle affiche des tuiles « Photo shooting à venir » aux couleurs des madras.**
+
+**Option A, la plus simple (recommandée pour commencer)** : mets tes photos dans `public/shooting/` (JPG ou WebP, format portrait ou carré, 1200 px de large suffisent), puis liste-les dans `config/drop.ts`, champ `gallery` :
+
+```ts
+gallery: [
+  { src: "/shooting/01.jpg", alt: "Look Guadeloupean porté à Pointe-à-Pitre", href: "https://www.instagram.com/p/XXXX/" },
+  { src: "/shooting/02.jpg", alt: "Look Martinican, plage", ratio: "1/1" },
+],
+```
+
+Chaque photo mène à la publication (`href`), ou à ta page Instagram si tu n'en mets pas. `ratio` règle la forme de la tuile (`"4/5"` par défaut).
+
+**Option B, branchée en direct sur Instagram** : le site peut afficher automatiquement tes dernières publications. Il faut un compte Instagram **professionnel** et un jeton d'accès (Meta for Developers → créer une app → produit « Instagram » → générer un jeton d'accès) à mettre dans la variable `INSTAGRAM_ACCESS_TOKEN`. Le jeton expire au bout de 60 jours : il faut le renouveler (Meta le permet tant qu'il n'est pas expiré). Si le jeton est absent ou expiré, le site retombe sur les photos de l'option A. Cette option n'a pas pu être testée avec un vrai compte : à vérifier à la première mise en place. TikTok n'a pas d'équivalent simple : ses vidéos se relient une à une avec `href`.
+
 ## 3. Variables d'environnement
 
 Le modèle est dans `.env.example`. **Ne jamais** committer `.env.local` ni partager ces valeurs.
@@ -132,6 +149,7 @@ Le modèle est dans `.env.example`. **Ne jamais** committer `.env.local` ni part
 | `SUPABASE_SERVICE_ROLE_KEY` | Clé secrète Supabase (serveur uniquement) |
 | `STRIPE_SECRET_KEY` | Clé secrète Stripe (`sk_test_…` puis `sk_live_…`) |
 | `STRIPE_WEBHOOK_SECRET` | Secret de signature du webhook (`whsec_…`) |
+| `INSTAGRAM_ACCESS_TOKEN` | Facultatif : affiche automatiquement tes dernières publications Instagram dans la galerie (voir 2.7) |
 | `STRIPE_AUTOMATIC_TAX` | Facultatif : `1` pour activer Stripe Tax (voir 2.5). Vide = désactivé |
 | `RESEND_API_KEY` | Clé Resend |
 | `ADMIN_PASSWORD` | Mot de passe de `/admin` (8 caractères minimum, choisis-en un long) |
