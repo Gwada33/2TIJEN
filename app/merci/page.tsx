@@ -4,9 +4,9 @@ import Link from "next/link";
 import { drop, getDesign } from "@/config/drop";
 import { AutoRefresh, ClearCart, PieceNumber } from "@/components/MerciClient";
 import { SiteFooter } from "@/components/SiteFooter";
-import { demoOrder, demoPay, demoStripeEnabled, demoTotalFor } from "@/lib/demo-store";
+import { demoOrder, demoTotalFor } from "@/lib/demo-store";
+import { settleCheckout } from "@/lib/fulfil";
 import { estimatedDelivery, formatDay, formatEuros } from "@/lib/format";
-import { stripe } from "@/lib/stripe";
 import { demoMode } from "@/lib/stock";
 import { db } from "@/lib/supabase";
 
@@ -24,31 +24,16 @@ const CONFETTI_SHAPES = [
 ];
 
 export default async function Merci({ searchParams }: PageProps<"/merci">) {
-  const { session_id, demo, demo_session } = await searchParams;
-  const sessionId = typeof session_id === "string" && /^cs_[A-Za-z0-9_]+$/.test(session_id) ? session_id : null;
-  const paidReturn = Boolean(sessionId) || typeof demo === "string" || typeof demo_session === "string";
+  const { ref, demo } = await searchParams;
+  const reservationId = typeof ref === "string" && /^[0-9a-f-]{36}$/.test(ref) ? ref : null;
 
   let order: Order | null = null;
-  let mode: "simulation" | "stripe-test" | null = null;
+  let simulation = false;
 
   // --- Démo (développement) ---
-  let demoData = demoMode() && typeof demo === "string" ? demoOrder(demo) : undefined;
-  let demoEmail: string | null = null;
-  if (demoStripeEnabled() && typeof demo_session === "string" && /^cs_[A-Za-z0-9_]+$/.test(demo_session)) {
-    try {
-      // Sans webhook en démo : on vérifie ici auprès de Stripe que le paiement est passé.
-      const s = await stripe().checkout.sessions.retrieve(demo_session);
-      if (s.payment_status === "paid" && s.metadata?.demo_order) {
-        demoData = demoPay(s.metadata.demo_order) && demoOrder(s.metadata.demo_order);
-        demoEmail = s.customer_details?.email ?? null;
-        mode = "stripe-test";
-      }
-    } catch (e) {
-      console.error("merci (démo Stripe)", e);
-    }
-  }
+  const demoData = demoMode() && typeof demo === "string" ? demoOrder(demo) : undefined;
   if (demoData?.pieces) {
-    mode ??= "simulation";
+    simulation = true;
     order = {
       pieces: demoData.pieces.map((p) => ({ designId: p.designId, size: p.size, number: p.number, total: demoTotalFor(p.designId), unitAmount: p.unitAmount })),
       discount: demoData.discount,
@@ -56,15 +41,18 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
       total: demoData.total,
       shipping: demoData.shipping,
       delivery: demoData.delivery,
-      email: demoEmail,
+      email: demoData.email,
     };
-  } else if (sessionId) {
-    // --- Production : la commande est écrite par le webhook Stripe, parfois quelques secondes après ---
+  } else if (reservationId && !demoMode()) {
+    // --- Production : SumUp nous ramène ici. On vérifie le paiement auprès de SumUp (sans attendre sa notification) ---
     try {
+      const { data: reservation } = await db().from("reservations").select("checkout_id").eq("id", reservationId).maybeSingle();
+      if (reservation?.checkout_id) await settleCheckout(reservation.checkout_id);
+
       const { data } = await db()
         .from("orders")
         .select("amount_total, discount_amount, promo_code, shipping_amount, delivery_method, email, order_items(design_id, size, piece_number, unit_amount)")
-        .eq("stripe_session_id", sessionId)
+        .eq("reservation_id", reservationId)
         .maybeSingle();
       const designs = await db().from("designs").select("id, total_pieces");
       const totals = new Map((designs.data ?? []).map((d) => [d.id, d.total_pieces as number]));
@@ -94,12 +82,12 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
 
   return (
     <>
-      {paidReturn && <ClearCart />}
+      {order && <ClearCart />}
       {order && <Confetti />}
       <main id="contenu" className="mx-auto max-w-2xl px-5 py-16 sm:py-24">
-        {mode && (
+        {simulation && (
           <p role="note" className="mb-10 rounded-2xl bg-sun p-3 text-center text-sm font-bold text-night">
-            {mode === "stripe-test" ? "MODE TEST STRIPE : paiement de test, aucun vrai débit, aucun e-mail." : "SIMULATION : achat de test, aucun vrai paiement ni e-mail."}
+            SIMULATION : achat de test, aucun vrai paiement ni e-mail.
           </p>
         )}
 
@@ -112,7 +100,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
             Merci !
           </h1>
           <p className="merci-in mt-3 text-muted" style={{ "--d": "0.65s" } as React.CSSProperties}>
-            {order ? "Ta précommande est confirmée." : "Ton paiement est bien reçu."}
+            {order ? "Ta précommande est confirmée." : "On vérifie ton paiement."}
             {order?.email ? <> Un e-mail de confirmation part à <span className="text-ink">{order.email}</span>.</> : null}
           </p>
         </div>
@@ -162,7 +150,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
           <div className="mt-12 rounded-3xl border border-line bg-surface p-6 text-center" role="status">
             <p className="font-heavy text-sm uppercase tracking-wide">Enregistrement de ta commande…</p>
             <p className="mt-2 text-sm text-muted">Tes numéros de pièces arrivent dans quelques secondes, et par e-mail.</p>
-            {sessionId && <AutoRefresh />}
+            {reservationId && <AutoRefresh />}
           </div>
         )}
 

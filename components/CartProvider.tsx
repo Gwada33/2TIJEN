@@ -35,6 +35,9 @@ export type Quote = {
   promoError: string | null;
 };
 export type Delivery = "pickup" | "shipping";
+/** Coordonnées du client (saisies dans le panier, gardées en mémoire seulement : jamais dans le navigateur). */
+export type CustomerForm = { email: string; name: string; phone: string; line1: string; postal_code: string; city: string };
+const EMPTY_CUSTOMER: CustomerForm = { email: "", name: "", phone: "", line1: "", postal_code: "", city: "" };
 
 export const CART_STORAGE_KEY = "2tijen-cart-v1";
 
@@ -86,6 +89,8 @@ type CartContextValue = {
   /** Vrai quand le devis affiché correspond exactement au panier actuel. */
   quoteFresh: boolean;
   blocked: boolean;
+  customer: CustomerForm;
+  setCustomer: (patch: Partial<CustomerForm>) => void;
   inCart: (designId: string, size: Size) => number;
   add: (items: { designId: string; size: Size }[]) => void;
   setQty: (designId: string, size: Size, qty: number) => void;
@@ -145,6 +150,7 @@ export function CartProvider(props: {
   const [open, setOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
+  const [customer, setCustomerState] = useState<CustomerForm>(EMPTY_CUSTOMER);
   const pieces = cart.reduce((n, l) => n + l.qty, 0);
   const inCart = (designId: string, size: Size) => cart.find((l) => l.designId === designId && l.size === size)?.qty ?? 0;
 
@@ -213,7 +219,18 @@ export function CartProvider(props: {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, delivery, accessToken, promo: quote?.discount ? promo : undefined }),
+        body: JSON.stringify({
+          cart,
+          delivery,
+          accessToken,
+          promo: quote?.discount ? promo : undefined,
+          customer: {
+            email: customer.email,
+            name: customer.name,
+            phone: customer.phone,
+            address: delivery === "shipping" ? { line1: customer.line1, postal_code: customer.postal_code, city: customer.city } : null,
+          },
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -243,6 +260,8 @@ export function CartProvider(props: {
     quoteError,
     quoteFresh: fetched?.key === cartKey,
     blocked,
+    customer,
+    setCustomer: (patch) => setCustomerState((c) => ({ ...c, ...patch })),
     inCart,
     add,
     setQty,

@@ -11,7 +11,7 @@ export type CartLine = { designId: string; size: Size; qty: number };
 /** Une pièce physique, avec son prix individuel et si elle a le prix early bird. */
 export type Unit = { designId: string; size: Size; earlyBird: boolean; unitAmount: number };
 
-/** Une ligne facturée (ce que Stripe affichera). */
+/** Une ligne facturée (ce qui est facturé). */
 export type PricedLine = {
   kind: "piece" | "pack";
   label: string;

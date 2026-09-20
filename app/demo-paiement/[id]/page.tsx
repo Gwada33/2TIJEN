@@ -8,7 +8,7 @@ import { payDemo } from "../actions";
 
 export const metadata: Metadata = { title: "Paiement (simulation)", robots: { index: false } };
 
-/** Fausse page de paiement, uniquement en mode démo (DEMO_NO_DB=1) : elle remplace Stripe pour tester le parcours. */
+/** Fausse page de paiement, uniquement en mode démo (DEMO_NO_DB=1) : elle remplace SumUp pour tester le parcours. */
 export default async function Page({ params, searchParams }: PageProps<"/demo-paiement/[id]">) {
   if (!demoMode()) notFound();
   const { id } = await params;
@@ -18,7 +18,7 @@ export default async function Page({ params, searchParams }: PageProps<"/demo-pa
   return (
     <main id="contenu" className="mx-auto max-w-lg px-5 py-16">
       <p role="note" className="mb-6 rounded-2xl bg-sun p-4 text-center font-bold text-night">
-        SIMULATION : aucune carte, aucun vrai paiement. Cette page remplace Stripe pour tester.
+        SIMULATION : aucune carte, aucun vrai paiement. Cette page remplace SumUp pour tester.
       </p>
       {!order ? (
         <>

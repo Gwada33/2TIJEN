@@ -66,11 +66,11 @@ export async function sendOrderConfirmation(o: ConfirmationOrder) {
   await send(o.email, `${drop.brand} — précommande confirmée`, html);
 }
 
-export async function sendRefundNotice(email: string) {
+export async function sendRefundNotice(email: string, refunded = true) {
   const html = layout(
     "Ta commande n'a pas pu être honorée",
     `<p>Désolé : pendant que tu payais, la dernière pièce que tu avais choisie a été vendue.
-       Ton paiement a été <strong>remboursé automatiquement</strong> (quelques jours selon ta banque).</p>
+       ${refunded ? "Ton paiement a été <strong>remboursé automatiquement</strong> (quelques jours selon ta banque)." : "Ton paiement va être <strong>remboursé</strong> très vite : on s'en occupe et on te prévient."}</p>
      <p>Rendez-vous sur le site pour voir ce qu'il reste, ou inscris-toi à la liste d'attente pour le prochain drop.</p>`,
   );
   await send(email, `${drop.brand} — remboursement de ta commande`, html);

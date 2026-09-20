@@ -1,28 +1,29 @@
 import type { NextRequest } from "next/server";
 import { drop, getDesign } from "@/config/drop";
 import { canPurchase, getNow } from "@/lib/drop-state";
-import { automaticTaxEnabled, buildCheckoutParams } from "@/lib/checkout-session";
+import type { CheckoutCustomer } from "@/lib/fulfil";
+import { parseCustomer } from "@/lib/customer";
 import { lookupPromo, normalizeCode, type Promo } from "@/lib/promo";
-import { demoCreateSession, demoStripeEnabled } from "@/lib/demo-store";
+import { demoCreateSession } from "@/lib/demo-store";
 import { demoMode } from "@/lib/stock";
 import { CartError, computeQuote, validateCart } from "@/lib/pricing";
 import { allowRequest, clientIp } from "@/lib/rate-limit";
 import { siteUrl } from "@/lib/env";
-import { stripe } from "@/lib/stripe";
+import { createCheckout } from "@/lib/sumup";
 import { db } from "@/lib/supabase";
 import { isValidAccessToken } from "@/lib/waitlist";
 
 /**
- * Crée une session de paiement Stripe.
- * Le navigateur envoie seulement { cart: [{designId, size, qty}], delivery, accessToken }.
- * Le prix, le stock et l'early bird sont calculés ICI, côté serveur.
+ * Crée un paiement SumUp.
+ * Le navigateur envoie seulement { cart: [{designId, size, qty}], delivery, customer, promo, accessToken }.
+ * Le prix, la remise, le stock et l'early bird sont calculés ICI, côté serveur.
  */
 export async function POST(request: NextRequest) {
   if (!(await allowRequest(`checkout:${clientIp(request)}`, 60, 10))) {
     return Response.json({ error: "Trop de tentatives, réessaie dans une minute." }, { status: 429 });
   }
 
-  let body: { cart?: unknown; delivery?: unknown; accessToken?: unknown; promo?: unknown };
+  let body: { cart?: unknown; delivery?: unknown; accessToken?: unknown; promo?: unknown; customer?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -47,34 +48,23 @@ export async function POST(request: NextRequest) {
   }
   const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
 
+  const parsed = parseCustomer(body.customer, delivery);
+  if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
+
   // Code de réduction : revérifié ICI (le navigateur n'est jamais cru sur parole).
   let promo: Promo | null = null;
   if (normalizeCode(body.promo)) {
-    const provisional = computeQuote(cart, 0, now).total; // sert seulement au minimum d'achat éventuel du code
-    const r = await lookupPromo(body.promo, provisional);
+    const r = lookupPromo(body.promo, computeQuote(cart, 0, now).total, now);
     if (!r.ok) return Response.json({ error: r.error }, { status: 400 });
     promo = r.promo;
   }
+  const shippingAmount = delivery === "shipping" ? drop.shipping.metropolePrice : drop.shipping.pickupPrice;
 
-  // Mode démo (développement) : achat simulé, sans Stripe ni base de données.
+  // Mode démo (développement) : achat simulé, sans SumUp ni base de données.
   if (demoMode()) {
     try {
-      const order = demoCreateSession(cart, delivery, now, promo ? { code: promo.code, discount: promo.discount } : undefined);
-      // Sans clé Stripe de test : fausse page de paiement. Avec une clé sk_test_ : vraie page Stripe (mode test).
-      if (!demoStripeEnabled()) return Response.json({ url: `/demo-paiement/${order.id}` });
-      const session = await stripe().checkout.sessions.create(
-        buildCheckoutParams({
-          quote: order.quote,
-          automaticTax: automaticTaxEnabled(),
-          delivery,
-          reference: order.id,
-          metadata: { demo_order: order.id, delivery, drop: drop.name, ...(promo ? { promo_code: promo.code } : {}) },
-          promotionCodeId: promo?.id,
-          successUrl: `${siteUrl()}/merci?demo_session={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${siteUrl()}/#pieces`,
-        }),
-      );
-      return Response.json({ url: session.url });
+      const order = demoCreateSession(cart, delivery, now, promo ? { code: promo.code, discount: promo.discount } : undefined, parsed.customer.email);
+      return Response.json({ url: `/demo-paiement/${order.id}` });
     } catch (e) {
       if (e instanceof CartError) return Response.json({ error: e.message, soldOut: true }, { status: 409 });
       console.error("checkout (démo)", e);
@@ -132,25 +122,37 @@ export async function POST(request: NextRequest) {
     });
     if (priceError) throw new Error(priceError.message);
 
-    // 5. Session Stripe Checkout (page de paiement hébergée par Stripe).
-    const session = await stripe().checkout.sessions.create(
-      buildCheckoutParams({
-        quote,
-        automaticTax: automaticTaxEnabled(),
-        delivery,
-        reference: reservationId,
-        metadata: { reservation_id: reservationId, delivery, drop: drop.name, ...(promo ? { promo_code: promo.code } : {}) },
-        promotionCodeId: promo?.id,
-        successUrl: `${siteUrl()}/merci?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${siteUrl()}/#pieces`,
-      }),
-    );
-
-    await db().rpc("attach_stripe_session", { p_reservation: reservationId, p_session: session.id });
-    return Response.json({ url: session.url });
+    // 5. Remise recalculée sur le vrai devis, puis paiement SumUp (page hébergée par SumUp).
+    let discount = 0;
+    if (promo) {
+      const r = lookupPromo(promo.code, quote.total, now);
+      if (!r.ok) throw new CartError(r.error);
+      discount = r.promo.discount;
+    }
+    const amountTotal = quote.total - discount + shippingAmount;
+    const customer: CheckoutCustomer = {
+      ...parsed.customer,
+      delivery,
+      amount_total: amountTotal,
+      shipping_amount: shippingAmount,
+      promo_code: promo?.code ?? null,
+      discount_amount: discount,
+    };
+    // Les coordonnées sont gardées AVANT d'envoyer la personne payer : la confirmation du paiement ne les apporte pas.
+    const checkout = await createCheckout({
+      reference: reservationId,
+      amountCents: amountTotal,
+      redirectUrl: `${siteUrl()}/merci?ref=${reservationId}`,
+      returnUrl: `${siteUrl()}/api/webhooks/sumup`,
+      validUntil: new Date(now.getTime() + drop.reservationMinutes * 60_000),
+    });
+    const { error: attachError } = await db().rpc("attach_checkout", { p_reservation: reservationId, p_checkout: checkout.id, p_customer: customer });
+    if (attachError) throw new Error(attachError.message);
+    return Response.json({ url: checkout.url });
   } catch (e) {
-    console.error("checkout", e);
     await release();
+    if (e instanceof CartError) return Response.json({ error: e.message }, { status: 400 });
+    console.error("checkout", e);
     return Response.json({ error: "Impossible de lancer le paiement, réessaie." }, { status: 502 });
   }
 }

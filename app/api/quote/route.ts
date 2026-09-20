@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
   const quote = computeQuote(cart, piecesTaken(stock), getNow());
   const shipping = body.delivery === "shipping" ? drop.shipping.metropolePrice : drop.shipping.pickupPrice;
 
-  // Code de réduction (vérifié auprès de Stripe) : remise calculée sur le total des pièces, livraison exclue.
+  // Code de réduction (vérifié côté serveur) : remise calculée sur le total des pièces, livraison exclue.
   let discount: { code: string; label: string; amount: number } | null = null;
   let promoError: string | null = null;
   if (normalizeCode(body.promo)) {
     // Essais de codes limités : impossible de deviner des codes en boucle.
     const r = (await allowRequest(`promo:${clientIp(request)}`, 60, 12))
-      ? await lookupPromo(body.promo, quote.total)
+      ? await lookupPromo(body.promo, quote.total, getNow())
       : ({ ok: false, error: "Trop d'essais, patiente une minute." } as const);
     if (r.ok) discount = { code: r.promo.code, label: r.promo.label, amount: r.promo.discount };
     else promoError = r.error;

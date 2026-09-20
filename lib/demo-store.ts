@@ -6,7 +6,7 @@ import { CartError, computeQuote, type CartLine, type Quote } from "@/lib/pricin
 /**
  * Achat SIMULÉ pour le mode démo (DEMO_NO_DB=1, développement uniquement).
  * Permet de dérouler tout le parcours (panier → paiement → merci avec numéro de pièce)
- * sans compte Stripe ni Supabase. Rien n'est envoyé à Stripe, aucune carte n'est utilisée.
+ * sans compte SumUp ni Supabase. Rien n'est envoyé à SumUp, aucune carte n'est utilisée.
  * Les données vivent en mémoire : elles disparaissent quand on redémarre le serveur.
  */
 
@@ -19,6 +19,7 @@ export type DemoOrder = {
   /** Remise (code promo), en centimes. */
   discount: number;
   promoCode: string | null;
+  email: string | null;
   total: number;
   pieces: DemoPiece[] | null; // renseigné une fois « payé »
 };
@@ -32,10 +33,6 @@ type Store = {
 // globalThis : partagé entre les pages, les routes API et les rechargements à chaud.
 const g = globalThis as unknown as { __2tijenDemo?: Store };
 const store = (): Store => (g.__2tijenDemo ??= { sold: {}, lastNumber: {}, orders: new Map() });
-
-/** Mode démo + clé Stripe de TEST (sk_test_…) : le paiement passe par la vraie page Stripe, mais sans base de données. Jamais avec une clé live. */
-export const demoStripeEnabled = () =>
-  process.env.NODE_ENV !== "production" && process.env.DEMO_NO_DB === "1" && (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_test_");
 
 export const demoSold = () => store().sold;
 export const demoOrder = (id: string) => store().orders.get(id);
@@ -52,13 +49,13 @@ function assertAvailable(cart: CartLine[]) {
   }
 }
 
-/** Équivalent de « créer la session Stripe » : prix calculés côté serveur. */
-export function demoCreateSession(cart: CartLine[], delivery: "pickup" | "shipping", now: Date, promo?: { code: string; discount: number }): DemoOrder {
+/** Équivalent de « créer le paiement SumUp » : prix calculés côté serveur. */
+export function demoCreateSession(cart: CartLine[], delivery: "pickup" | "shipping", now: Date, promo?: { code: string; discount: number }, email: string | null = null): DemoOrder {
   assertAvailable(cart);
   const quote = computeQuote(cart, totalSold(), now);
   const shipping = delivery === "shipping" ? drop.shipping.metropolePrice : drop.shipping.pickupPrice;
   const discount = promo?.discount ?? 0;
-  const order: DemoOrder = { id: randomUUID(), delivery, quote, shipping, discount, promoCode: promo?.code ?? null, total: quote.total - discount + shipping, pieces: null };
+  const order: DemoOrder = { id: randomUUID(), delivery, quote, shipping, discount, promoCode: promo?.code ?? null, email, total: quote.total - discount + shipping, pieces: null };
   store().orders.set(order.id, order);
   return order;
 }

@@ -1,45 +1,31 @@
-import "server-only";
-import { stripe } from "@/lib/stripe";
+import { drop, type PromoCodeConfig } from "@/config/drop";
 import { formatEuros } from "@/lib/format";
 
 /**
- * Codes de réduction : ils sont créés et gérés dans Stripe (Dashboard → Catalogue de produits →
- * Coupons → « Codes promotionnels »). Le site vérifie le code côté serveur, calcule la remise
- * à afficher, puis transmet le code à Stripe qui l'applique au paiement.
+ * Codes de réduction : la liste est dans config/drop.ts (`promoCodes`). Le site vérifie le code
+ * côté serveur et calcule la remise ; le navigateur n'est jamais cru sur parole.
  */
 
-export type Promo = { id: string; code: string; label: string; discount: number };
+export type Promo = { code: string; label: string; discount: number };
 export type PromoResult = { ok: true; promo: Promo } | { ok: false; error: string };
 
 export const normalizeCode = (raw: unknown): string => (typeof raw === "string" ? raw.trim().toUpperCase() : "");
 
-/** @param subtotal total des pièces en centimes (livraison exclue) */
-export async function lookupPromo(rawCode: unknown, subtotal: number): Promise<PromoResult> {
+/**
+ * @param subtotal total des pièces en centimes (livraison exclue)
+ * @param codes liste des codes (paramétrable pour les tests)
+ */
+export function lookupPromo(rawCode: unknown, subtotal: number, now = new Date(), codes: PromoCodeConfig[] = drop.promoCodes): PromoResult {
   const code = normalizeCode(rawCode);
-  if (!/^[A-Z0-9_-]{3,40}$/.test(code)) return { ok: false, error: "Ce code n'est pas valable." };
-
-  let found;
-  try {
-    found = (await stripe().promotionCodes.list({ code, active: true, limit: 1, expand: ["data.promotion.coupon"] })).data[0];
-  } catch (e) {
-    console.error("promo", e);
-    return { ok: false, error: "Codes promo indisponibles pour le moment." };
-  }
-  const coupon = found?.promotion?.coupon;
   const invalid = { ok: false, error: "Ce code n'est pas valable." } as const;
-  if (!found || !coupon || typeof coupon === "string" || !found.active || !coupon.valid) return invalid;
-  if (found.customer) return invalid; // code réservé à un client précis
-  if (found.expires_at && found.expires_at * 1000 < Date.now()) return { ok: false, error: "Ce code a expiré." };
-  if (found.max_redemptions !== null && found.times_redeemed >= found.max_redemptions) return { ok: false, error: "Ce code a déjà été utilisé au maximum." };
-  const min = found.restrictions?.minimum_amount;
-  if (min && subtotal < min) return { ok: false, error: `Ce code demande une commande d'au moins ${formatEuros(min)}.` };
+  const found = /^[A-Z0-9_-]{3,40}$/.test(code) ? codes.find((c) => c.code.toUpperCase() === code) : undefined;
+  if (!found) return invalid;
+  if (found.expiresAt && new Date(found.expiresAt) < now) return { ok: false, error: "Ce code a expiré." };
+  if (found.minSubtotal && subtotal < found.minSubtotal) return { ok: false, error: `Ce code demande une commande d'au moins ${formatEuros(found.minSubtotal)}.` };
 
   let discount = 0;
-  if (coupon.percent_off) discount = Math.round((subtotal * coupon.percent_off) / 100);
-  else if (coupon.amount_off) {
-    if (coupon.currency && coupon.currency !== "eur") return invalid;
-    discount = Math.min(coupon.amount_off, subtotal);
-  }
+  if (found.percentOff) discount = Math.round((subtotal * found.percentOff) / 100);
+  else if (found.amountOff) discount = Math.min(found.amountOff, subtotal);
   if (discount <= 0) return invalid;
-  return { ok: true, promo: { id: found.id, code: found.code, label: coupon.name || found.code, discount } };
+  return { ok: true, promo: { code: found.code.toUpperCase(), label: found.label || found.code, discount } };
 }

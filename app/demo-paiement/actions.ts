@@ -5,7 +5,7 @@ import { CartError } from "@/lib/pricing";
 import { demoPay } from "@/lib/demo-store";
 import { demoMode } from "@/lib/stock";
 
-/** Paiement SIMULÉ (mode démo uniquement) : aucun échange avec Stripe. */
+/** Paiement SIMULÉ (mode démo uniquement) : aucun échange avec SumUp. */
 export async function payDemo(formData: FormData) {
   if (!demoMode()) redirect("/");
   const id = String(formData.get("id") ?? "");

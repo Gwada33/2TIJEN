@@ -21,6 +21,15 @@ export type GalleryPhoto = {
   ratio?: string;
 };
 
+export type PromoCodeConfig = {
+  code: string;
+  label?: string;
+  percentOff?: number;
+  amountOff?: number;
+  minSubtotal?: number;
+  expiresAt?: string;
+};
+
 export type DesignConfig = {
   /** Identifiant technique stable (utilisé en base de données). Ne pas changer après le lancement. */
   id: string;
@@ -119,15 +128,12 @@ export const drop = {
   gallery: [] as GalleryPhoto[],
 
   /**
-   * Stripe Tax (désactivé par défaut : variable STRIPE_AUTOMATIC_TAX=1, voir le README).
-   * Codes fiscaux pris dans la liste officielle de Stripe (API « Tax Codes ») ; à faire confirmer par le comptable.
+   * Codes de réduction. Ils sont vérifiés côté serveur : la remise porte sur le total des pièces (livraison exclue).
+   * Un code = `percentOff` (ex. 10 pour −10 %) OU `amountOff` (en centimes, ex. 500 pour −5 €).
+   * `minSubtotal` (centimes) et `expiresAt` (date ISO) sont facultatifs. Pas de limite d'utilisations : un code reste valable jusqu'à son expiration.
+   * PLACEHOLDER : liste vide. Exemple : { code: "BIENVENUE", label: "−10 %", percentOff: 10, expiresAt: "2026-10-21T23:59:00-04:00" }
    */
-  tax: {
-    /** « Clothing & Footwear » */
-    productCode: "txcd_30011000",
-    /** « Shipping » */
-    shippingCode: "txcd_92010001",
-  },
+  promoCodes: [] as PromoCodeConfig[],
 
   /** Tableau des tailles, en cm. PLACEHOLDER : mesures à confirmer avec le fournisseur. */
   sizeGuide: [

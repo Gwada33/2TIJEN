@@ -35,7 +35,7 @@ export default async function AdminPage() {
 
       {data.needsRefund > 0 && (
         <p role="alert" className="rounded-3xl bg-orange p-5 font-bold text-night">
-          {data.needsRefund} commande(s) payée(s) alors que le stock était épuisé : à rembourser dans Stripe.
+          {data.needsRefund} commande(s) payée(s) alors que le stock était épuisé : à rembourser dans SumUp.
         </p>
       )}
 

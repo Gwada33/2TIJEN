@@ -110,7 +110,7 @@ describe("commande (webhook)", () => {
     expect(res.status).toBe("oversold");
     const sold = await db.query<{ sold: number }>("select sold from stock where design_id='a' and size='M'");
     expect(sold.rows[0].sold).toBe(1);
-    const o = await db.query<{ status: string }>("select status from orders where stripe_session_id='cs_slow'");
+    const o = await db.query<{ status: string }>("select status from orders where checkout_id='cs_slow'");
     expect(o.rows[0].status).toBe("needs_refund");
   });
 

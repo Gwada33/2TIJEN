@@ -36,7 +36,10 @@ create table if not exists reservations (
   status            text not null default 'active'
                     check (status in ('active','completed','released')),
   expires_at        timestamptz not null,
-  stripe_session_id text unique,
+  -- identifiant du paiement chez SumUp (rempli quand la page de paiement est créée)
+  checkout_id       text unique,
+  -- coordonnées saisies sur le site avant le paiement + montants calculés par le serveur
+  customer          jsonb,
   created_at        timestamptz not null default now()
 );
 
@@ -56,8 +59,8 @@ create index if not exists reservation_items_res_idx on reservation_items(reserv
 
 create table if not exists orders (
   id                    uuid primary key default gen_random_uuid(),
-  stripe_session_id     text not null unique,        -- garantit l'idempotence
-  stripe_payment_intent text,
+  checkout_id           text not null unique,        -- paiement SumUp : garantit l'idempotence
+  transaction_id        text,                        -- transaction SumUp (sert au remboursement)
   reservation_id        uuid references reservations(id),
   drop_name             text,
   email                 text not null,
@@ -229,17 +232,18 @@ as $$
     and ri.reservation_id = p_reservation;
 $$;
 
-create or replace function attach_stripe_session(p_reservation uuid, p_session text)
+-- Associe la réservation au paiement SumUp et garde les coordonnées du client.
+create or replace function attach_checkout(p_reservation uuid, p_checkout text, p_customer jsonb)
 returns void
 language sql
 security definer
 set search_path = public
 as $$
-  update reservations set stripe_session_id = p_session where id = p_reservation;
+  update reservations set checkout_id = p_checkout, customer = p_customer where id = p_reservation;
 $$;
 
 -- Libère une réservation (paiement échoué, session expirée…).
-create or replace function release_reservation(p_reservation uuid default null, p_session text default null)
+create or replace function release_reservation(p_reservation uuid default null, p_checkout text default null)
 returns void
 language sql
 security definer
@@ -248,15 +252,15 @@ as $$
   update reservations
   set status = 'released'
   where status = 'active'
-    and (id = p_reservation or stripe_session_id = p_session);
+    and (id = p_reservation or checkout_id = p_checkout);
 $$;
 
--- Finalise une commande après paiement confirmé par Stripe (webhook).
+-- Finalise une commande après paiement confirmé par SumUp.
 -- IDEMPOTENT : rejouer le même événement ne crée jamais une 2e commande.
 -- Retourne {status: created | duplicate | unknown_reservation | oversold, ...}.
 create or replace function complete_order(
-  p_session_id      text,
-  p_payment_intent  text,
+  p_checkout_id     text,
+  p_transaction_id  text,
   p_reservation     uuid,
   p_drop_name       text,
   p_email           text,
@@ -284,7 +288,7 @@ declare
 begin
   perform pg_advisory_xact_lock(hashtext('2tijen_stock'));
 
-  select id into v_order from orders where stripe_session_id = p_session_id;
+  select id into v_order from orders where checkout_id = p_checkout_id;
   if found then
     return jsonb_build_object('status', 'duplicate', 'order_id', v_order);
   end if;
@@ -314,10 +318,10 @@ begin
     end loop;
   end if;
 
-  insert into orders (stripe_session_id, stripe_payment_intent, reservation_id, drop_name,
+  insert into orders (checkout_id, transaction_id, reservation_id, drop_name,
                       email, name, phone, delivery_method, shipping_address,
                       amount_total, shipping_amount, status)
-  values (p_session_id, p_payment_intent, p_reservation, p_drop_name,
+  values (p_checkout_id, p_transaction_id, p_reservation, p_drop_name,
           p_email, p_name, p_phone, p_delivery, p_address,
           p_amount_total, p_shipping_amount,
           case when v_ok then 'paid' else 'needs_refund' end)

@@ -15,9 +15,9 @@ export default function Page() {
         <li><strong>Liste d&apos;attente</strong> : e-mail, numéro WhatsApp (facultatif), date du consentement. Finalité : t&apos;informer des drops et t&apos;envoyer l&apos;accès anticipé. Base légale : ton consentement.</li>
       </ul>
       <h2>Paiement</h2>
-      <p>Le paiement est traité par Stripe. {drop.brand} ne voit et ne conserve jamais tes données de carte bancaire.</p>
+      <p>Le paiement est traité par SumUp. {drop.brand} ne voit et ne conserve jamais tes données de carte bancaire.</p>
       <h2>Destinataires et sous-traitants</h2>
-      <p>Stripe (paiement), Supabase (base de données), Resend (envoi d&apos;e-mails), Vercel (hébergement). <TODO>vérifier les transferts hors UE et les garanties associées</TODO></p>
+      <p>SumUp (paiement), Supabase (base de données), Resend (envoi d&apos;e-mails), Vercel (hébergement). <TODO>vérifier les transferts hors UE et les garanties associées</TODO></p>
       <h2>Durée de conservation</h2>
       <p>Commandes : <TODO>durée, ex. 10 ans pour les pièces comptables</TODO>. Liste d&apos;attente : jusqu&apos;à ta désinscription, ou <TODO>durée maximale, ex. 3 ans sans interaction</TODO>.</p>
       <h2>Tes droits</h2>

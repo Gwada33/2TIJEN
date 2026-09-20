@@ -37,7 +37,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs leading-relaxed text-muted sm:flex-row sm:justify-between">
-          <p>Précommande · livraison estimée {formatDay(from)} – {formatDay(to, true)} · paiement sécurisé Stripe</p>
+          <p>Précommande · livraison estimée {formatDay(from)} – {formatDay(to, true)} · paiement sécurisé SumUp</p>
           <p>© {new Date().getFullYear()} {drop.brand}</p>
         </div>
       </div>

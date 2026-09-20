@@ -16,7 +16,7 @@ export function ClearCart() {
   return null;
 }
 
-/** Le webhook Stripe peut prendre quelques secondes : on recharge la page jusqu'à 6 fois. */
+/** La confirmation de SumUp peut prendre quelques secondes : on recharge la page jusqu'à 6 fois. */
 export function AutoRefresh({ every = 3000, times = 6 }: { every?: number; times?: number }) {
   const router = useRouter();
   useEffect(() => {

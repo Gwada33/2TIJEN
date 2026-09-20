@@ -24,7 +24,7 @@ export default function Page() {
         {" "}pack 2 designs à {formatEuros(drop.prices.pack)}. Les frais de livraison sont indiqués avant le paiement.
       </p>
       <h2>4. Commande et paiement</h2>
-      <p>Le paiement est exigible en totalité à la commande, par carte bancaire (ou Apple Pay / Google Pay) via Stripe. Les pièces sont réservées {drop.reservationMinutes} minutes pendant le paiement. La commande est confirmée par e-mail avec le numéro de chaque pièce.</p>
+      <p>Le paiement est exigible en totalité à la commande, par carte bancaire (ou Apple Pay / Google Pay) via SumUp. Les pièces sont réservées {drop.reservationMinutes} minutes pendant le paiement. La commande est confirmée par e-mail avec le numéro de chaque pièce.</p>
       <h2>5. Livraison</h2>
       <p>Remise en main propre en Guadeloupe (gratuite) ou envoi en métropole (frais : {formatEuros(drop.shipping.metropolePrice)}). Délai annoncé : {drop.deliveryDelay}. Ce délai est indicatif. <TODO>modalités de remise en main propre</TODO></p>
       <h2>6. Droit de rétractation</h2>
