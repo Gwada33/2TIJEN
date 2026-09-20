@@ -30,29 +30,29 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <StoreShell store={store} home>
-      {/* HERO */}
-      <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 md:grid-cols-[1fr_1.15fr] md:py-20">
-        <div>
+      {/* HERO : sur mobile, l'ordre est titre → pièces → compte à rebours et bouton */}
+      <section aria-labelledby="titre-hero" className="mx-auto grid max-w-6xl gap-x-12 gap-y-10 px-5 py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:py-20">
+        <div className="md:self-end">
+          <p className="mb-4 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-muted">T-shirts oversize numérotés</p>
           <h1 id="titre-hero">
-            <Ransom text="CARIBBEAN REPRESENT" tag="Drop" className="text-[clamp(1.4rem,7vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
+            <Ransom text="CARIBBEAN REPRESENT" tag="Drop" className="text-[clamp(1.4rem,8vw,3.4rem)] md:text-[min(3.6vw,3rem)]" />
           </h1>
-          {countdown && (
-            <div className="mt-9">
-              <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />
-            </div>
-          )}
-          <a href={cta.href} className="btn btn-primary mt-9 !pr-2.5">
-            {cta.label}
-            <span className="btn-disc" aria-hidden="true">→</span>
-          </a>
         </div>
 
-        <div className="relative aspect-[6/5] w-full">
+        <div className="relative aspect-[6/5] w-full md:col-start-2 md:row-span-2 md:row-start-1">
           {drop.designs.map((d, i) => (
             <Link key={d.id} href={`/pieces/${d.id}`} className={`absolute aspect-[5/4] w-[72%] ${i === 0 ? "left-0 top-0" : "bottom-0 right-0"}`}>
               <Image src={d.images.back} alt={d.alt.back} fill priority={i === 0} sizes="(min-width: 768px) 38vw, 72vw" className="tee-shot object-contain" />
             </Link>
           ))}
+        </div>
+
+        <div className="md:self-start">
+          {countdown && <Countdown target={countdown.target} serverNow={now.getTime()} label={countdown.label} />}
+          <a href={cta.href} className={`btn btn-primary !pr-2.5 ${countdown ? "mt-9" : ""}`}>
+            {cta.label}
+            <span className="btn-disc" aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
 

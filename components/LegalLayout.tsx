@@ -8,7 +8,7 @@ export function LegalLayout({ title, children }: { title: string; children: Reac
     <>
       <header className="bg-night">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-5">
-          <Link href="/" className="font-heavy text-xl tracking-wide hover:text-sun">← {drop.brand}</Link>
+          <Link href="/" className="inline-flex min-h-11 items-center font-heavy text-xl tracking-wide hover:text-sun">← {drop.brand}</Link>
         </div>
         <div className="madras" aria-hidden="true" />
       </header>

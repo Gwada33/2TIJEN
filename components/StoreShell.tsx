@@ -29,13 +29,13 @@ export function StoreShell({ store, home = false, children }: { store: Storefron
     >
       <header className="sticky top-0 z-30 border-b border-line bg-night/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link href="/" className="flex items-center gap-2 font-heavy text-base tracking-wide" aria-label={`${drop.brand}, accueil`}>
+          <Link href="/" className="flex min-h-11 min-w-11 items-center gap-2 font-heavy text-base tracking-wide" aria-label={`${drop.brand}, accueil`}>
             <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-6 w-auto" />
-            {drop.brand}
+            <span className="max-[359px]:hidden">{drop.brand}</span>
           </Link>
           <div className="flex items-center gap-2">
             <CartButton />
-            <Link href={cta.href} className="btn btn-ghost !min-h-10 !px-5 !text-[0.65rem]">{cta.label}</Link>
+            <Link href={cta.href} className="btn btn-ghost !min-h-11 !px-4 !text-[0.72rem] sm:!px-5">{cta.label}</Link>
           </div>
         </div>
       </header>

@@ -6,7 +6,7 @@ import { estimatedDelivery, formatDay } from "@/lib/format";
 export function SiteFooter() {
   const { from, to } = estimatedDelivery();
   const link = "underline-offset-4 hover:text-sun hover:underline";
-  const social = "btn btn-ghost !min-h-10 !px-5 !text-[0.65rem]";
+  const social = "btn btn-ghost !min-h-11 !px-5 !text-[0.72rem]";
   const external = { rel: "noopener noreferrer", target: "_blank" } as const;
   return (
     <footer className="bg-night text-ink">

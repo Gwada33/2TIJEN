@@ -25,6 +25,7 @@ export function Shop(props: ShopProps) {
   const { designs, canBuy, add } = useCart();
   const [selected, setSelected] = useState<Record<string, Size | null>>({});
   const bothSelected = designs.every((d) => selected[d.id]);
+  const [packHint, setPackHint] = useState(false);
 
   return (
     <section id="pieces" aria-labelledby="titre-pieces" className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
@@ -55,15 +56,21 @@ export function Shop(props: ShopProps) {
               <span className="text-muted line-through">{props.pack.regular}</span>
             </p>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary w-full !pr-2.5 sm:w-80"
-            disabled={!bothSelected}
-            onClick={() => add(designs.map((d) => ({ designId: d.id, size: selected[d.id]! })))}
-          >
-            {bothSelected ? "Ajouter le pack" : "Une taille par design"}
-            <span className="btn-disc" aria-hidden="true">+</span>
-          </button>
+          <div className="w-full sm:w-80">
+            <button
+              type="button"
+              className="btn btn-primary w-full !pr-2.5"
+              onClick={() => {
+                if (!bothSelected) return setPackHint(true); // on explique au lieu de griser le bouton
+                setPackHint(false);
+                add(designs.map((d) => ({ designId: d.id, size: selected[d.id]! })));
+              }}
+            >
+              Ajouter le pack
+              <span className="btn-disc" aria-hidden="true">+</span>
+            </button>
+            {packHint && !bothSelected && <p role="alert" className="mt-2 text-sm font-bold text-orange">Choisis une taille pour chaque pièce.</p>}
+          </div>
         </div>
       )}
     </section>
@@ -94,7 +101,7 @@ function ProductCard(props: {
           onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
           onPointerLeave={(e) => { if (e.pointerType === "mouse") setFlipped(false); }}
         >
-          <span className="flip-stage absolute inset-0 block scale-[1.12]">
+          <span className="flip-stage absolute inset-0 block scale-[1.06]">
             <span className="flip-card block" data-flipped={flipped}>
               <span className="flip-face">
                 <Image src={d.images.back} alt={flipped ? "" : d.alt.back} fill sizes="(min-width: 768px) 46vw, 92vw" className="tee-shot object-contain" />
@@ -110,7 +117,7 @@ function ProductCard(props: {
           aria-pressed={flipped}
           aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"}`}
           onClick={() => setFlipped((f) => !f)}
-          className="absolute bottom-2 right-0 grid h-9 w-9 place-items-center border border-line bg-night/70 text-base backdrop-blur"
+          className="absolute bottom-2 right-0 grid h-11 w-11 place-items-center border border-line bg-night/70 text-base backdrop-blur"
         >
           <span aria-hidden="true">↻</span>
         </button>

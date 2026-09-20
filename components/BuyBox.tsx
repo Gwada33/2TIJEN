@@ -54,7 +54,7 @@ export function BuyBox(props: {
               >
                 <span className={`block text-sm ${soldOut ? "line-through" : ""}`}>{s}</span>
                 {canBuy && (
-                  <span className={`block text-[0.6rem] font-bold leading-tight ${active ? "text-night" : "text-pink-bright"}`}>
+                  <span className={`block text-[0.7rem] font-bold leading-tight ${active ? "text-night" : "text-pink-bright"}`}>
                     {soldOut ? "Épuisé" : left <= lowStock ? `Plus que ${left}` : " "}
                   </span>
                 )}
@@ -65,15 +65,15 @@ export function BuyBox(props: {
         {needSize && <p role="alert" className="mt-2 text-sm font-bold text-orange">Choisis une taille.</p>}
         {canBuy && allSoldOut && <p role="status" className="mt-2 text-sm font-bold text-pink-bright">Épuisé.</p>}
       </div>
-      <a href="#tailles" onClick={openGuide} className="mt-2 inline-block text-xs text-muted underline underline-offset-4 hover:text-ink">Guide des tailles</a>
+      <a href="#tailles" onClick={openGuide} className="inline-flex min-h-11 items-center text-xs text-muted underline underline-offset-4 hover:text-ink">Guide des tailles</a>
 
       {canBuy ? (
-        <button type="button" className="btn btn-primary btn-square mt-4 w-full !pr-2.5" disabled={allSoldOut || maxedOut} onClick={onCta}>
+        <button type="button" className="btn btn-primary mt-2 w-full !pr-2.5" disabled={allSoldOut || maxedOut} onClick={onCta}>
           {maxedOut ? "Max. dans ton panier" : `Ajouter · ${props.price}`}
           {!maxedOut && <span className="btn-disc" aria-hidden="true">+</span>}
         </button>
       ) : (
-        <Link href="/#liste" className="btn btn-primary btn-square mt-4 w-full !pr-2.5">
+        <Link href="/#liste" className="btn btn-primary mt-2 w-full !pr-2.5">
           Me prévenir
           <span className="btn-disc" aria-hidden="true">→</span>
         </Link>

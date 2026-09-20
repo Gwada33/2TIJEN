@@ -5,7 +5,7 @@ export function SizeGuide() {
   return (
     <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16">
       <details id="tailles" className="group scroll-mt-24 border-y border-line py-5">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
           Guide des tailles
           <span aria-hidden="true" className="text-xl transition-transform duration-200 group-open:rotate-45">+</span>
         </summary>

@@ -7,6 +7,7 @@ import { ProductBuy } from "@/components/BuyBox";
 import { PhotoTile } from "@/components/PhotoTile";
 import { SizeGuide } from "@/components/SizeGuide";
 import { StoreShell } from "@/components/StoreShell";
+import { siteUrl } from "@/lib/env";
 import { formatEuros } from "@/lib/format";
 import { loadStorefront } from "@/lib/storefront";
 
@@ -23,12 +24,37 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
 
   const store = await loadStorefront(await searchParams);
   const cartDesign = store.designs.find((d) => d.id === design.id)!;
-  // Photos portées de CETTE pièce ; sans photo fournie, deux tuiles provisoires.
-  const worn = design.photos.length ? design.photos : [undefined, undefined];
+  // Photos portées de CETTE pièce. Sans photo fournie : tuiles provisoires en développement seulement.
+  const worn = design.photos.length ? design.photos : process.env.NODE_ENV !== "production" ? [undefined, undefined] : [];
+  const other = drop.designs.find((d) => d.id !== design.id);
+  const availability = store.mode === "closed" || cartDesign.stock.left === 0 ? "OutOfStock" : "PreOrder";
 
   return (
     <StoreShell store={store}>
-      <article className="mx-auto grid max-w-6xl gap-10 px-5 py-8 md:grid-cols-[1.5fr_1fr] md:gap-16 md:py-14" aria-labelledby="titre-piece">
+      {/* Données structurées : prix et disponibilité de la pièce pour les moteurs de recherche */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: design.name,
+            image: `${siteUrl()}${design.images.back}`,
+            brand: { "@type": "Brand", name: drop.brand },
+            offers: {
+              "@type": "Offer",
+              url: `${siteUrl()}/pieces/${design.id}`,
+              priceCurrency: "EUR",
+              price: (store.unit.amount / 100).toFixed(2),
+              availability: `https://schema.org/${availability}`,
+            },
+          }),
+        }}
+      />
+      <div className="mx-auto max-w-6xl px-5 pt-3">
+        <Link href="/#pieces" className="inline-flex min-h-11 items-center text-xs text-muted underline underline-offset-4 hover:text-ink">← Les pièces</Link>
+      </div>
+      <article className="mx-auto grid max-w-6xl gap-10 px-5 pb-8 pt-2 md:grid-cols-[1.5fr_1fr] md:gap-16 md:pb-14" aria-labelledby="titre-piece">
         {/* Photos : défilement horizontal sur mobile, grille sur ordinateur */}
         <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0" aria-label={`Photos, ${design.name}`}>
           {[
@@ -48,13 +74,18 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
 
         {/* Achat : reste visible à l'écran sur ordinateur */}
         <div className="md:sticky md:top-24 md:self-start">
-          <Link href="/#pieces" className="text-xs text-muted underline underline-offset-4 hover:text-ink">← Les pièces</Link>
-          <div className="madras-chip mt-6 h-1.5 w-16" style={{ "--madras-img": `url(${design.madras})` } as React.CSSProperties} aria-hidden="true" />
+          <div className="madras-chip h-1.5 w-16" style={{ "--madras-img": `url(${design.madras})` } as React.CSSProperties} aria-hidden="true" />
           <h1 id="titre-piece" className="mt-4 font-heavy text-xl uppercase leading-snug tracking-wide sm:text-2xl">{design.name}</h1>
           <p className="mt-3 font-heavy text-3xl">{formatEuros(store.unit.amount)}</p>
           <div className="mt-8">
             <ProductBuy design={cartDesign} sizes={[...SIZES]} mode={store.mode} price={formatEuros(store.unit.amount)} lowStock={drop.lowStockThreshold} />
           </div>
+          {other && (
+            <Link href={`/pieces/${other.id}`} className="mt-8 flex min-h-11 items-center justify-between border-t border-line pt-4 text-sm text-muted hover:text-ink">
+              <span>{other.name}</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
         </div>
       </article>
       <SizeGuide />

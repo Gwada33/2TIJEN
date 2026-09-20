@@ -11,16 +11,10 @@
   --color-muted: #a7a2a6;
 
   --color-sun: #ffd23f;
-  --color-madras: #c8231b; /* rouge du madras */
   --color-pink: #b5549f;
   --color-pink-bright: #f08ad2; /* rose lisible en texte sur fond noir */
-  --color-yellow: #d7bc4b;
   --color-orange: #f07b4a;
-  --color-teal: #40959b;
   --color-green: #2e9c2e;
-  --color-blue: #285db2;
-  --color-navy: #08309d;
-  --color-sky: #acdaed;
 
   --font-sans: var(--font-body), system-ui, sans-serif;
   --font-slab: var(--f-slab), Georgia, serif;
@@ -74,9 +68,6 @@ body {
 .btn-primary { background: var(--color-sun); color: var(--color-night); }
 .btn-primary:hover { background: #fff; }
 .btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #2a2a30; color: #b8b4b7; cursor: not-allowed; }
-/* Variante à angles droits (cartes produit). */
-.btn-square { border-radius: 4px; }
-.btn-square .btn-disc { border-radius: 2px; }
 .btn-ghost { border: 1px solid var(--color-ink); color: var(--color-ink); background: transparent; }
 .btn-ghost:hover { background: rgb(244 241 236 / 0.1); }
 .btn-disc {
@@ -141,7 +132,9 @@ body {
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .flip-face-back { transform: rotateY(180deg); }
 
-.tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.4)) drop-shadow(0 14px 18px rgb(0 0 0 / 0.5)); }
+/* Fin liseré + halo très léger : le t-shirt noir se détache du fond noir (Martinican surtout).
+   Pas d'ombre portée noire : invisible sur fond noir, et coûteuse à peindre sur mobile. */
+.tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.45)) drop-shadow(0 0 22px rgb(255 255 255 / 0.06)); }
 
 /* ---------- Panier en volet latéral ---------- */
 .cart-drawer {

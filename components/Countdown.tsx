@@ -44,7 +44,7 @@ export function Countdown({ target, serverNow, label }: { target: string; server
         {parts.map((p) => (
           <div key={p.l}>
             <div className="font-heavy text-3xl tabular-nums leading-none sm:text-4xl">{String(p.v).padStart(2, "0")}</div>
-            <div className="mt-2 text-[0.65rem] uppercase tracking-[0.2em] text-muted">{p.l}</div>
+            <div className="mt-2 text-[0.7rem] uppercase tracking-[0.2em] text-muted">{p.l}</div>
           </div>
         ))}
       </div>

@@ -194,14 +194,23 @@ export function Ransom({ text, tag, className = "" }: { text: string; tag?: stri
       }, 0);
       return () => clearTimeout(id);
     }
-    const t0 = performance.now();
-    const id = setInterval(() => {
-      const count = Math.min(chars.length, Math.max(0, Math.floor((performance.now() - t0 - START_MS) / STEP_MS) + 1));
-      setSettled(count);
-      setTiles(chars.map((ch, i) => (i < count ? finals[i] : randomTile(Math.random, ch, rot(i)))));
-      if (count >= chars.length) clearInterval(id);
-    }, FRAME_MS);
-    return () => clearInterval(id);
+    // L'animation démarre une fois la page chargée : elle ne ralentit pas l'affichage de l'image principale.
+    let id: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      const t0 = performance.now();
+      id = setInterval(() => {
+        const count = Math.min(chars.length, Math.max(0, Math.floor((performance.now() - t0 - START_MS) / STEP_MS) + 1));
+        setSettled(count);
+        setTiles(chars.map((ch, i) => (i < count ? finals[i] : randomTile(Math.random, ch, rot(i)))));
+        if (count >= chars.length) clearInterval(id);
+      }, FRAME_MS);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("load", start);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 

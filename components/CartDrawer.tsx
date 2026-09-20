@@ -14,7 +14,7 @@ export function CartButton() {
       type="button"
       onClick={() => setOpen(true)}
       aria-label={`Ouvrir le panier, ${pieces} pièce${pieces > 1 ? "s" : ""}`}
-      className="relative grid h-10 w-10 place-items-center rounded-full border border-line transition-colors hover:border-ink"
+      className="relative grid h-11 w-11 place-items-center rounded-full border border-line transition-colors hover:border-ink"
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M5 8h14l-1 12H6L5 8Z" />
@@ -197,6 +197,7 @@ export function CartDrawer() {
                 {!c.paying && <span className="btn-disc" aria-hidden="true">→</span>}
               </button>
               {c.payError && <p role="alert" className="mt-3 text-sm font-bold text-orange">{c.payError}</p>}
+              <p className="mt-3 text-center text-xs text-muted">Paiement sécurisé · Stripe</p>
             </div>
           </>
         )}
