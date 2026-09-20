@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { drop, getDesign } from "@/config/drop";
 import { canPurchase, getNow } from "@/lib/drop-state";
-import { buildCheckoutParams } from "@/lib/checkout-session";
+import { automaticTaxEnabled, buildCheckoutParams } from "@/lib/checkout-session";
 import { demoCreateSession, demoStripeEnabled } from "@/lib/demo-store";
 import { demoMode } from "@/lib/stock";
 import { CartError, computeQuote, validateCart } from "@/lib/pricing";
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       const session = await stripe().checkout.sessions.create(
         buildCheckoutParams({
           quote: order.quote,
+          automaticTax: automaticTaxEnabled(),
           delivery,
           reference: order.id,
           metadata: { demo_order: order.id, delivery, drop: drop.name },
@@ -124,6 +125,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe().checkout.sessions.create(
       buildCheckoutParams({
         quote,
+        automaticTax: automaticTaxEnabled(),
         delivery,
         reference: reservationId,
         metadata: { reservation_id: reservationId, delivery, drop: drop.name },

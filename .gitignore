@@ -42,3 +42,14 @@ next-env.d.ts
 
 # on garde le modèle de variables d'environnement
 !.env.example
+
+# outils d'agents installés en local (skills Stripe) : pas dans le dépôt
+/.agents/
+/.claude/
+/.augment/
+/.devin/
+/.hermes/
+/.trae/
+/.vibe/
+/.windsurf/
+skills-lock.json

@@ -50,4 +50,27 @@ describe("session Stripe Checkout", () => {
     expect(p.client_reference_id).toBe("res_1");
     expect(p.mode).toBe("payment");
   });
+
+  it("Stripe Tax désactivé par défaut : aucun champ fiscal envoyé", () => {
+    const p = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "pickup" });
+    expect(p.automatic_tax).toBeUndefined();
+    expect(p.line_items![0].price_data!.tax_behavior).toBeUndefined();
+  });
+
+  it("Stripe Tax activé : prix TTC (inclusive), codes fiscaux de la config, livraison incluse", () => {
+    const p = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "shipping", automaticTax: true });
+    expect(p.automatic_tax).toEqual({ enabled: true });
+    for (const l of p.line_items!) {
+      expect(l.price_data!.tax_behavior).toBe("inclusive");
+      expect(l.price_data!.product_data!.tax_code).toBe(drop.tax.productCode);
+    }
+    const rate = p.shipping_options![0].shipping_rate_data!;
+    expect(rate.tax_behavior).toBe("inclusive");
+    expect(rate.tax_code).toBe(drop.tax.shippingCode);
+  });
+
+  it("n'utilise jamais payment_method_types (méthodes de paiement dynamiques)", () => {
+    const p = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "pickup" });
+    expect("payment_method_types" in p).toBe(false);
+  });
 });

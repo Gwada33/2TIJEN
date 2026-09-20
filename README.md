@@ -102,6 +102,17 @@ Ces deux réglages sont **ignorés en production** : personne ne peut les utilis
 
 ---
 
+### 2.5 Stripe Tax (TVA automatique) : facultatif, désactivé par défaut
+
+Le site envoie déjà à Stripe tout ce qu'il faut (prix TTC, code fiscal « Clothing & Footwear » `txcd_30011000`, code « Shipping » `txcd_92010001`, réglables dans `config/drop.ts`), mais **rien n'est activé tant que tu ne mets pas `STRIPE_AUTOMATIC_TAX=1`**. Avant de l'activer :
+
+1. **Demande à ton comptable si tu dois facturer de la TVA.** Une micro-entreprise en franchise en base de TVA n'en facture pas : Stripe Tax est alors inutile. La Guadeloupe a aussi sa propre TVA (différente de la métropole) : je n'ai trouvé aucune mention de la Guadeloupe dans la documentation Stripe Tax, vérifie auprès de Stripe ou de ton comptable que le territoire est géré.
+2. Dans Stripe : **Tax → Paramètres**, renseigne l'adresse du siège (sans elle, le statut reste « pending » et aucune taxe n'est calculée).
+3. **Tax → Enregistrements** : ajoute chaque zone où tu dois collecter la TVA. **Sans enregistrement actif, Stripe ne calcule et ne perçoit aucune taxe, sans afficher d'erreur.**
+4. Fais un achat de test et vérifie sur le paiement (Dashboard) que la ligne « TVA » apparaît avec le bon montant.
+
+Les prix du site restent TTC : la TVA est comprise dans le prix affiché.
+
 ## 3. Variables d'environnement
 
 Le modèle est dans `.env.example`. **Ne jamais** committer `.env.local` ni partager ces valeurs.
@@ -113,6 +124,7 @@ Le modèle est dans `.env.example`. **Ne jamais** committer `.env.local` ni part
 | `SUPABASE_SERVICE_ROLE_KEY` | Clé secrète Supabase (serveur uniquement) |
 | `STRIPE_SECRET_KEY` | Clé secrète Stripe (`sk_test_…` puis `sk_live_…`) |
 | `STRIPE_WEBHOOK_SECRET` | Secret de signature du webhook (`whsec_…`) |
+| `STRIPE_AUTOMATIC_TAX` | Facultatif : `1` pour activer Stripe Tax (voir 2.5). Vide = désactivé |
 | `RESEND_API_KEY` | Clé Resend |
 | `ADMIN_PASSWORD` | Mot de passe de `/admin` (8 caractères minimum, choisis-en un long) |
 | `ADMIN_SESSION_SECRET` | Longue chaîne aléatoire (32+ caractères) qui signe la connexion admin |

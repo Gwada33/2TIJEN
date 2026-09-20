@@ -90,6 +90,17 @@ export const drop = {
     emailFrom: "2TIJEN <commande@2tijen.example>",
   },
 
+  /**
+   * Stripe Tax (désactivé par défaut : variable STRIPE_AUTOMATIC_TAX=1, voir le README).
+   * Codes fiscaux pris dans la liste officielle de Stripe (API « Tax Codes ») ; à faire confirmer par le comptable.
+   */
+  tax: {
+    /** « Clothing & Footwear » */
+    productCode: "txcd_30011000",
+    /** « Shipping » */
+    shippingCode: "txcd_92010001",
+  },
+
   /** Tableau des tailles, en cm. PLACEHOLDER : mesures à confirmer avec le fournisseur. */
   sizeGuide: [
     { size: "S", chest: 54, length: 70 },
