@@ -46,6 +46,7 @@ export function CartDrawer() {
   }, [c.open]);
 
   const [promoInput, setPromoInput] = useState("");
+  const [promoOpen, setPromoOpen] = useState(false);
   const design = (id: string) => c.designs.find((d) => d.id === id)!;
   const opt = c.deliveryOptions;
 
@@ -146,6 +147,11 @@ export function CartDrawer() {
                   <span><span className="font-heavy text-xs tracking-wider">{c.quote.discount.code}</span> <span className="text-muted">appliqué</span></span>
                   <button type="button" onClick={() => { c.clearPromo(); setPromoInput(""); }} className="text-xs text-muted underline underline-offset-4 hover:text-ink">Retirer</button>
                 </div>
+              ) : !promoOpen && !c.promo ? (
+                // Replié par défaut : gagne de la place sur les petits écrans
+                <button type="button" onClick={() => setPromoOpen(true)} className="mb-2 inline-flex min-h-11 items-center text-xs text-muted underline underline-offset-4 hover:text-ink">
+                  Code de réduction
+                </button>
               ) : (
                 <form
                   className="mb-4"
@@ -158,6 +164,7 @@ export function CartDrawer() {
                   <div className="flex gap-2">
                     <input
                       id="promo"
+                      autoFocus={promoOpen}
                       value={promoInput}
                       onChange={(e) => setPromoInput(e.target.value)}
                       placeholder="Code de réduction"
