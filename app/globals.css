@@ -132,10 +132,6 @@ body {
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .flip-face-back { transform: rotateY(180deg); }
 
-/* Fin liseré + halo très léger : le t-shirt noir se détache du fond noir (Martinican surtout).
-   Pas d'ombre portée noire : invisible sur fond noir, et coûteuse à peindre sur mobile. */
-.tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.45)) drop-shadow(0 0 22px rgb(255 255 255 / 0.06)); }
-
 /* ---------- Panier en volet latéral ---------- */
 .cart-drawer {
   position: fixed;

@@ -104,10 +104,10 @@ function ProductCard(props: {
           <span className="flip-stage absolute inset-0 block scale-[1.06]">
             <span className="flip-card block" data-flipped={flipped}>
               <span className="flip-face">
-                <Image src={d.images.back} alt={flipped ? "" : d.alt.back} fill sizes="(min-width: 768px) 46vw, 92vw" className="tee-shot object-contain" />
+                <Image src={d.images.back} alt={flipped ? "" : d.alt.back} fill sizes="(min-width: 768px) 46vw, 92vw" className="object-contain" />
               </span>
               <span className="flip-face flip-face-back">
-                <Image src={d.images.front} alt={flipped ? d.alt.front : ""} fill sizes="(min-width: 768px) 46vw, 92vw" className="tee-shot object-contain" />
+                <Image src={d.images.front} alt={flipped ? d.alt.front : ""} fill sizes="(min-width: 768px) 46vw, 92vw" className="object-contain" />
               </span>
             </span>
           </span>
