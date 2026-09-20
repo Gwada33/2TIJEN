@@ -8,7 +8,7 @@ import { Shop } from "@/components/Shop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { canPurchase, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
-import { formatDateTime, formatDay, formatEuros } from "@/lib/format";
+import { estimatedDelivery, formatDateTime, formatDay, formatEuros } from "@/lib/format";
 import { currentUnitPrice } from "@/lib/pricing";
 import { fallbackStock, getStock, piecesTaken, type StockMap } from "@/lib/stock";
 import { isValidAccessToken } from "@/lib/waitlist";
@@ -45,6 +45,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     images: d.images,
     alt: d.alt,
     available: Object.fromEntries(SIZES.map((s) => [s, stock[d.id]?.[s]?.available ?? 0])) as Record<Size, number>,
+    stock: {
+      total: SIZES.reduce((n, s) => n + (stock[d.id]?.[s]?.total ?? 0), 0),
+      left: SIZES.reduce((n, s) => n + (stock[d.id]?.[s]?.available ?? 0), 0),
+    },
   }));
 
   const opensLabel = formatDateTime(opensAt());
@@ -155,11 +159,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           earlyBirdLeft={earlyBirdLeft}
           pack={{ price: formatEuros(drop.prices.pack), regular: formatEuros(drop.prices.regular * 2) }}
           lowStock={drop.lowStockThreshold}
+          earlyBirdSaving={unit.earlyBird ? formatEuros(drop.prices.regular - drop.prices.earlyBird) : null}
+          deliveryEstimate={`${formatDay(estimatedDelivery().from)} – ${formatDay(estimatedDelivery().to, true)}`}
         />
 
         {/* GUIDE DES TAILLES */}
         <section aria-label="Guide des tailles" className="mx-auto max-w-6xl px-5 pb-16">
-          <details className="group border-y border-line py-5">
+          <details id="tailles" className="group scroll-mt-24 border-y border-line py-5">
             <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em]">
               Guide des tailles
               <span aria-hidden="true" className="text-xl transition-transform duration-200 group-open:rotate-45">+</span>

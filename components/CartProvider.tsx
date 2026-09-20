@@ -20,6 +20,8 @@ export type CartDesign = {
   alt: { front: string; back: string };
   /** Stock disponible par taille (fourni par le serveur). */
   available: Record<Size, number>;
+  /** Stock total du design et pièces encore disponibles (toutes tailles), fournis par le serveur. */
+  stock: { total: number; left: number };
 };
 export type Quote = {
   lines: { label: string; unitAmount: number; quantity: number }[];
