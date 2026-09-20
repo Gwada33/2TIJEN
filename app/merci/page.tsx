@@ -3,19 +3,33 @@ import Link from "next/link";
 import { drop, getDesign } from "@/config/drop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { formatPieceNumber } from "@/lib/email";
-import { demoOrder, demoTotalFor } from "@/lib/demo-store";
+import { demoOrder, demoPay, demoStripeEnabled, demoTotalFor } from "@/lib/demo-store";
+import { stripe } from "@/lib/stripe";
 import { demoMode } from "@/lib/stock";
 import { db } from "@/lib/supabase";
 
 export const metadata: Metadata = { title: "Merci !", robots: { index: false } };
 
 export default async function Merci({ searchParams }: PageProps<"/merci">) {
-  const { session_id, demo } = await searchParams;
+  const { session_id, demo, demo_session } = await searchParams;
   const sessionId = typeof session_id === "string" && /^cs_[A-Za-z0-9_]+$/.test(session_id) ? session_id : null;
 
   // Le webhook Stripe peut mettre quelques secondes à enregistrer la commande.
   let items: { design_id: string; size: string; piece_number: number; total: number }[] = [];
-  const demoPieces = demoMode() && typeof demo === "string" ? demoOrder(demo)?.pieces : null;
+  let demoPieces = demoMode() && typeof demo === "string" ? demoOrder(demo)?.pieces : null;
+  // Démo avec vraie page Stripe (mode test) : sans webhook, on vérifie ici que Stripe a bien encaissé.
+  let stripeTest = false;
+  if (demoStripeEnabled() && typeof demo_session === "string" && /^cs_[A-Za-z0-9_]+$/.test(demo_session)) {
+    try {
+      const s = await stripe().checkout.sessions.retrieve(demo_session);
+      if (s.payment_status === "paid" && s.metadata?.demo_order) {
+        demoPieces = demoPay(s.metadata.demo_order).pieces;
+        stripeTest = true;
+      }
+    } catch (e) {
+      console.error("merci (démo Stripe)", e);
+    }
+  }
   if (demoPieces) {
     items = demoPieces.map((p) => ({ design_id: p.designId, size: p.size, piece_number: p.number, total: demoTotalFor(p.designId) }));
   } else if (sessionId) {
@@ -34,7 +48,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
       <main id="contenu" className="mx-auto max-w-2xl px-5 py-20 text-center">
         {demoPieces && (
           <p role="note" className="mb-8 rounded-2xl bg-sun p-3 text-sm font-bold text-night">
-            SIMULATION : achat de test, aucun vrai paiement ni e-mail.
+            {stripeTest ? "MODE TEST STRIPE : paiement de test, aucun vrai débit, aucun e-mail." : "SIMULATION : achat de test, aucun vrai paiement ni e-mail."}
           </p>
         )}
         <h1 className="font-heavy text-3xl uppercase tracking-wide">Merci !</h1>

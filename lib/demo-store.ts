@@ -30,6 +30,10 @@ type Store = {
 const g = globalThis as unknown as { __2tijenDemo?: Store };
 const store = (): Store => (g.__2tijenDemo ??= { sold: {}, lastNumber: {}, orders: new Map() });
 
+/** Mode démo + clé Stripe de TEST (sk_test_…) : le paiement passe par la vraie page Stripe, mais sans base de données. Jamais avec une clé live. */
+export const demoStripeEnabled = () =>
+  process.env.NODE_ENV !== "production" && process.env.DEMO_NO_DB === "1" && (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_test_");
+
 export const demoSold = () => store().sold;
 export const demoOrder = (id: string) => store().orders.get(id);
 

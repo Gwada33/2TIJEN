@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
-import type Stripe from "stripe";
 import { drop, getDesign } from "@/config/drop";
 import { canPurchase, getNow } from "@/lib/drop-state";
-import { demoCreateSession } from "@/lib/demo-store";
+import { buildCheckoutParams } from "@/lib/checkout-session";
+import { demoCreateSession, demoStripeEnabled } from "@/lib/demo-store";
 import { demoMode } from "@/lib/stock";
 import { CartError, computeQuote, validateCart } from "@/lib/pricing";
 import { allowRequest, clientIp } from "@/lib/rate-limit";
@@ -49,10 +49,24 @@ export async function POST(request: NextRequest) {
   // Mode démo (développement) : achat simulé, sans Stripe ni base de données.
   if (demoMode()) {
     try {
-      return Response.json({ url: `/demo-paiement/${demoCreateSession(cart, delivery, now).id}` });
+      const order = demoCreateSession(cart, delivery, now);
+      // Sans clé Stripe de test : fausse page de paiement. Avec une clé sk_test_ : vraie page Stripe (mode test).
+      if (!demoStripeEnabled()) return Response.json({ url: `/demo-paiement/${order.id}` });
+      const session = await stripe().checkout.sessions.create(
+        buildCheckoutParams({
+          quote: order.quote,
+          delivery,
+          reference: order.id,
+          metadata: { demo_order: order.id, delivery, drop: drop.name },
+          successUrl: `${siteUrl()}/merci?demo_session={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${siteUrl()}/#pieces`,
+        }),
+      );
+      return Response.json({ url: session.url });
     } catch (e) {
       if (e instanceof CartError) return Response.json({ error: e.message, soldOut: true }, { status: 409 });
-      throw e;
+      console.error("checkout (démo)", e);
+      return Response.json({ error: "Impossible de lancer le paiement, réessaie." }, { status: 502 });
     }
   }
 
@@ -107,46 +121,16 @@ export async function POST(request: NextRequest) {
     if (priceError) throw new Error(priceError.message);
 
     // 5. Session Stripe Checkout (page de paiement hébergée par Stripe).
-    const shipping =
-      delivery === "shipping"
-        ? { label: drop.shipping.metropoleLabel, amount: drop.shipping.metropolePrice }
-        : { label: drop.shipping.pickupLabel, amount: drop.shipping.pickupPrice };
-
-    const session = await stripe().checkout.sessions.create({
-      mode: "payment",
-      line_items: quote.lines.map((l) => ({
-        quantity: l.quantity,
-        price_data: {
-          currency: "eur",
-          unit_amount: l.unitAmount,
-          product_data: { name: l.label },
-        },
-      })),
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            display_name: shipping.label,
-            fixed_amount: { amount: shipping.amount, currency: "eur" },
-          },
-        },
-      ],
-      ...(delivery === "shipping"
-        ? {
-            shipping_address_collection: {
-              allowed_countries: drop.shipping.metropoleCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
-            },
-          }
-        : {}),
-      phone_number_collection: { enabled: true },
-      client_reference_id: reservationId,
-      metadata: { reservation_id: reservationId, delivery, drop: drop.name },
-      locale: "fr",
-      // Stripe impose un minimum de 30 min ; le stock, lui, n'est gardé que 15 min.
-      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
-      success_url: `${siteUrl()}/merci?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl()}/#pieces`,
-    });
+    const session = await stripe().checkout.sessions.create(
+      buildCheckoutParams({
+        quote,
+        delivery,
+        reference: reservationId,
+        metadata: { reservation_id: reservationId, delivery, drop: drop.name },
+        successUrl: `${siteUrl()}/merci?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${siteUrl()}/#pieces`,
+      }),
+    );
 
     await db().rpc("attach_stripe_session", { p_reservation: reservationId, p_session: session.id });
     return Response.json({ url: session.url });

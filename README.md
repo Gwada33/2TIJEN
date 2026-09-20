@@ -29,7 +29,18 @@ npm run demo
 
 Ouvre <http://localhost:3000> : le site est « ouvert » (date simulée au 13 octobre 2026, early bird actif). Choisis une taille, ajoute au panier, clique sur « Payer » : tu arrives sur une **fausse page de paiement** (bandeau jaune « SIMULATION »), puis sur la page « Merci » avec ton numéro de pièce (ex. 001/050). Le stock diminue et les numéros avancent à chaque achat. Rien n'est envoyé à Stripe, aucun e-mail n'est envoyé, et tout est remis à zéro quand tu relances le serveur. Ce mode est **ignoré en production**.
 
-Pour tester le **vrai** parcours (page Stripe, carte de test 4242…, e-mail, commande dans `/admin`), crée les comptes des parties 2.1 à 2.3 puis suis la partie 5.
+### Tester avec la vraie page Stripe (mode test), sans base de données
+
+Il suffit d'un compte Stripe (partie 2.2) et de sa clé **de test** :
+
+1. Crée `.env.local` (copie de `.env.example`) et remplis seulement `STRIPE_SECRET_KEY=sk_test_…`.
+2. Lance `npm run demo`.
+3. Achète une pièce : tu arrives sur la **vraie page Stripe** (bandeau « mode test »). Paie avec la carte `4242 4242 4242 4242`, n'importe quelle date future et n'importe quel CVC.
+4. Tu reviens sur « Merci » avec ton numéro de pièce. Le paiement apparaît dans Stripe (Developers → mode test → Payments).
+
+Ce raccourci n'utilise pas la base ni le webhook : le site vérifie lui-même auprès de Stripe que le paiement est passé. Il ne fonctionne qu'avec une clé `sk_test_` et est **ignoré en production**.
+
+Pour tester le **parcours complet** (webhook, base Supabase, e-mail, commande dans `/admin`), crée aussi les comptes 2.1 et 2.3 puis suis la partie 5.
 
 ### Voir les autres états du site
 
