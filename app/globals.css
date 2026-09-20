@@ -134,6 +134,41 @@ body {
 
 .tee-shot { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.4)) drop-shadow(0 14px 18px rgb(0 0 0 / 0.5)); }
 
+/* ---------- Panier en volet latéral ---------- */
+.cart-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  height: 100dvh;
+  max-height: none;
+  width: min(100vw, 26rem);
+  max-width: none;
+  border: 0;
+  border-left: 1px solid var(--color-line);
+  background: var(--color-night);
+  color: var(--color-ink);
+  padding: 0;
+}
+.cart-drawer[open] { animation: drawer-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cart-drawer::backdrop { background: rgb(0 0 0 / 0.65); }
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+
+/* ---------- Page de confirmation ---------- */
+/* Base = coche entièrement tracée : sans animation (réduire les animations), elle est déjà visible. */
+.check-circle { stroke-dasharray: 151; animation: draw-circle 0.7s ease-out both; }
+.check-path { stroke-dasharray: 42; animation: draw-check 0.45s ease-out 0.55s both; }
+.merci-in { animation: merci-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--d, 0s); }
+.confetti { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+.confetti i { position: absolute; top: -6%; animation: confetti-fall var(--t) cubic-bezier(0.3, 0.1, 0.6, 1) var(--d) both; }
+@keyframes draw-circle { from { stroke-dashoffset: 151; } to { stroke-dashoffset: 0; } }
+@keyframes draw-check { from { stroke-dashoffset: 42; } to { stroke-dashoffset: 0; } }
+@keyframes merci-in { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: none; } }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--sway), 112vh) rotate(var(--rot)); }
+}
+
 @keyframes pop { from { transform: scale(1.3); } to { transform: scale(1); } }
 @keyframes slap {
   from { opacity: 0; transform: translateY(-0.8em) rotate(calc(var(--r) * 4)) scale(calc(var(--s, 1) * 1.5)); }

@@ -2,7 +2,9 @@ import Image from "next/image";
 import { drop, SIZES, type Size } from "@/config/drop";
 import { Countdown } from "@/components/Countdown";
 import { Ransom } from "@/components/Ransom";
-import { Shop, type ShopDesign } from "@/components/Shop";
+import { CartProvider, type CartDesign } from "@/components/CartProvider";
+import { CartButton, CartDrawer } from "@/components/CartDrawer";
+import { Shop } from "@/components/Shop";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { canPurchase, getNow, getPhase, isEarlyAccessWindow, opensAt } from "@/lib/drop-state";
@@ -36,7 +38,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const unit = currentUnitPrice(taken, now);
   const earlyBirdLeft = unit.earlyBird ? Math.max(drop.earlyBird.maxPieces - taken, 0) : null;
 
-  const designs: ShopDesign[] = drop.designs.map((d) => ({
+  const designs: CartDesign[] = drop.designs.map((d) => ({
     id: d.id,
     name: d.name,
     madras: d.madras,
@@ -61,16 +63,30 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         : { target: drop.opensAt, label: earlyAccess ? "Ouverture publique dans" : "Ouverture de la préco dans" };
 
   return (
-    <>
+    <CartProvider
+      canBuy={mode === "open"}
+      designs={designs}
+      maxPieces={drop.maxPiecesPerOrder}
+      accessToken={earlyAccess ? token : null}
+      deliveryOptions={{
+        pickupLabel: drop.shipping.pickupLabel,
+        pickupPrice: drop.shipping.pickupPrice === 0 ? "Gratuit" : formatEuros(drop.shipping.pickupPrice),
+        shippingLabel: drop.shipping.metropoleLabel,
+        shippingPrice: formatEuros(drop.shipping.metropolePrice),
+      }}
+    >
       <header className="sticky top-0 z-30 border-b border-line bg-night/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <a href="#" className="flex items-center gap-2 font-heavy text-base tracking-wide" aria-label={`${drop.brand}, retour en haut`}>
             <Image src="/logo-2t-white.png" alt="" width={28} height={28} className="h-6 w-auto" />
             {drop.brand}
           </a>
-          <a href={cta.href} className="btn btn-ghost !min-h-10 !px-5 !text-[0.65rem]">
-            {mode === "open" ? "Précommander" : "Liste d'attente"}
-          </a>
+          <div className="flex items-center gap-2">
+            <CartButton />
+            <a href={cta.href} className="btn btn-ghost !min-h-10 !px-5 !text-[0.65rem]">
+              {mode === "open" ? "Précommander" : "Liste d'attente"}
+            </a>
+          </div>
         </div>
       </header>
 
@@ -132,22 +148,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         {/* PIÈCES + PACK + PANIER */}
         <Shop
-          designs={designs}
           sizes={[...SIZES]}
           mode={mode}
           opensLabel={`le ${formatDay(opensAt())}`}
           price={{ current: formatEuros(unit.amount), regular: unit.earlyBird ? formatEuros(drop.prices.regular) : null }}
           earlyBirdLeft={earlyBirdLeft}
           pack={{ price: formatEuros(drop.prices.pack), regular: formatEuros(drop.prices.regular * 2) }}
-          delivery={{
-            pickupLabel: drop.shipping.pickupLabel,
-            pickupPrice: drop.shipping.pickupPrice === 0 ? "Gratuit" : formatEuros(drop.shipping.pickupPrice),
-            shippingLabel: drop.shipping.metropoleLabel,
-            shippingPrice: formatEuros(drop.shipping.metropolePrice),
-          }}
           lowStock={drop.lowStockThreshold}
-          maxPieces={drop.maxPiecesPerOrder}
-          accessToken={earlyAccess ? token : null}
         />
 
         {/* GUIDE DES TAILLES */}
@@ -193,6 +200,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </main>
 
       <SiteFooter />
-    </>
+      <CartDrawer />
+    </CartProvider>
   );
 }
