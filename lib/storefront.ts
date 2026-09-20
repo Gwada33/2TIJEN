@@ -32,6 +32,7 @@ export async function loadStorefront(searchParams: { [key: string]: string | str
     id: d.id,
     name: d.name,
     madras: d.madras,
+    backdrop: d.backdrop,
     images: d.images,
     alt: d.alt,
     available: Object.fromEntries(SIZES.map((s) => [s, stock[d.id]?.[s]?.available ?? 0])) as Record<Size, number>,

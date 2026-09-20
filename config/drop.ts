@@ -28,6 +28,8 @@ export type DesignConfig = {
   images: { front: string; back: string };
   /** Texture madras propre au design (fichier de public/). */
   madras: string;
+  /** Couleur du fond derrière le t-shirt (le noir se voit mal sur le noir du site). */
+  backdrop: string;
   /**
    * Photos de shooting PORTÉ de cette pièce, affichées sur sa page produit (mêmes champs que `gallery`).
    * PLACEHOLDER : vide = tuiles « photo à venir ». Fichiers dans public/shooting/.
@@ -140,6 +142,7 @@ export const drop = {
       id: "guadeloupean",
       name: "Guadeloupean Represent",
       madras: "/madras.webp",
+      backdrop: "#e9dcc3",
       photos: [],
       images: {
         front: "/products/guadeloupean-front.webp",
@@ -155,6 +158,7 @@ export const drop = {
       id: "martinican",
       name: "Martinican Represent",
       madras: "/madras-martinican.webp",
+      backdrop: "#b8c8e6",
       photos: [],
       images: {
         front: "/products/martinican-front.webp",

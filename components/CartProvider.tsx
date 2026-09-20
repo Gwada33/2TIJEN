@@ -16,6 +16,7 @@ export type CartDesign = {
   id: string;
   name: string;
   madras: string;
+  backdrop: string;
   images: { front: string; back: string };
   alt: { front: string; back: string };
   /** Stock disponible par taille (fourni par le serveur). */

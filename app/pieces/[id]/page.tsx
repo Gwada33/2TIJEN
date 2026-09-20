@@ -61,7 +61,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
             { src: design.images.back, alt: design.alt.back },
             { src: design.images.front, alt: design.alt.front },
           ].map((v) => (
-            <div key={v.src} className="relative aspect-[4/5] w-[86%] shrink-0 snap-center bg-surface md:w-auto">
+            <div key={v.src} className="relative aspect-[4/5] w-[86%] shrink-0 snap-center md:w-auto" style={{ backgroundColor: design.backdrop }}>
               <Image src={v.src} alt={v.alt} fill priority sizes="(min-width: 768px) 30vw, 86vw" className="object-contain p-2" />
             </div>
           ))}
