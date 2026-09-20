@@ -24,6 +24,8 @@ export function buildCheckoutParams(o: {
   nowSeconds?: number;
   /** Active Stripe Tax (calcul automatique de la TVA). Ne rien percevoir tant qu'aucune immatriculation n'est déclarée dans Stripe. */
   automaticTax?: boolean;
+  /** Identifiant Stripe du code promo (promo_…), déjà vérifié par le serveur. */
+  promotionCodeId?: string;
 }): Stripe.Checkout.SessionCreateParams {
   // Les prix du site sont des prix TTC : la TVA, si elle est calculée, est INCLUSE dans le prix.
   const taxBehavior = o.automaticTax ? ({ tax_behavior: "inclusive" } as const) : {};
@@ -64,6 +66,7 @@ export function buildCheckoutParams(o: {
         }
       : {}),
     ...(o.automaticTax ? { automatic_tax: { enabled: true } } : {}),
+    ...(o.promotionCodeId ? { discounts: [{ promotion_code: o.promotionCodeId }] } : {}),
     phone_number_collection: { enabled: true },
     client_reference_id: o.reference,
     metadata: o.metadata,

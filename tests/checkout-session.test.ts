@@ -73,4 +73,11 @@ describe("session Stripe Checkout", () => {
     const p = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "pickup" });
     expect("payment_method_types" in p).toBe(false);
   });
+
+  it("code promo : transmis à Stripe par son identifiant (jamais un montant venu du navigateur)", () => {
+    const p = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "pickup", promotionCodeId: "promo_123" });
+    expect(p.discounts).toEqual([{ promotion_code: "promo_123" }]);
+    const none = buildCheckoutParams({ ...base, quote: computeQuote(cart, 0, NOW), delivery: "pickup" });
+    expect(none.discounts).toBeUndefined();
+  });
 });

@@ -16,6 +16,9 @@ export type DemoOrder = {
   delivery: "pickup" | "shipping";
   quote: Quote;
   shipping: number;
+  /** Remise (code promo), en centimes. */
+  discount: number;
+  promoCode: string | null;
   total: number;
   pieces: DemoPiece[] | null; // renseigné une fois « payé »
 };
@@ -50,11 +53,12 @@ function assertAvailable(cart: CartLine[]) {
 }
 
 /** Équivalent de « créer la session Stripe » : prix calculés côté serveur. */
-export function demoCreateSession(cart: CartLine[], delivery: "pickup" | "shipping", now: Date): DemoOrder {
+export function demoCreateSession(cart: CartLine[], delivery: "pickup" | "shipping", now: Date, promo?: { code: string; discount: number }): DemoOrder {
   assertAvailable(cart);
   const quote = computeQuote(cart, totalSold(), now);
   const shipping = delivery === "shipping" ? drop.shipping.metropolePrice : drop.shipping.pickupPrice;
-  const order: DemoOrder = { id: randomUUID(), delivery, quote, shipping, total: quote.total + shipping, pieces: null };
+  const discount = promo?.discount ?? 0;
+  const order: DemoOrder = { id: randomUUID(), delivery, quote, shipping, discount, promoCode: promo?.code ?? null, total: quote.total - discount + shipping, pieces: null };
   store().orders.set(order.id, order);
   return order;
 }

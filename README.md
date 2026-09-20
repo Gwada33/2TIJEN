@@ -27,7 +27,7 @@ Sans compte Supabase, le site s'affiche mais **l'achat est désactivé** (bandea
 npm run demo
 ```
 
-Ouvre <http://localhost:3000> : le site est « ouvert » (date simulée au 13 octobre 2026, early bird actif). Choisis une taille, ajoute au panier, clique sur « Payer » : tu arrives sur une **fausse page de paiement** (bandeau jaune « SIMULATION »), puis sur la page « Merci » avec ton numéro de pièce (ex. 001/050). Le stock diminue et les numéros avancent à chaque achat. Rien n'est envoyé à Stripe, aucun e-mail n'est envoyé, et tout est remis à zéro quand tu relances le serveur. Ce mode est **ignoré en production**.
+Ouvre <http://localhost:3000> : le site est « ouvert » (date simulée au 13 octobre 2026). Choisis une taille, ajoute au panier, clique sur « Payer » : tu arrives sur une **fausse page de paiement** (bandeau jaune « SIMULATION »), puis sur la page « Merci » avec ton numéro de pièce (ex. 001/050). Le stock diminue et les numéros avancent à chaque achat. Rien n'est envoyé à Stripe, aucun e-mail n'est envoyé, et tout est remis à zéro quand tu relances le serveur. Ce mode est **ignoré en production**.
 
 ### Tester avec la vraie page Stripe (mode test), sans base de données
 
@@ -112,6 +112,14 @@ Le site envoie déjà à Stripe tout ce qu'il faut (prix TTC, code fiscal « Clo
 4. Fais un achat de test et vérifie sur le paiement (Dashboard) que la ligne « TVA » apparaît avec le bon montant.
 
 Les prix du site restent TTC : la TVA est comprise dans le prix affiché.
+
+### 2.6 Codes de réduction
+
+Les codes se créent **dans Stripe** (mode test d'abord) : **Catalogue de produits → Coupons → Nouveau coupon** (pourcentage ou montant en euros), puis **Ajouter un code promotionnel** (le texte que les clients tapent, par exemple `BIENVENUE10`). Tu peux limiter le nombre d'utilisations, la date de fin ou un montant minimum de commande. Rien à modifier dans le site.
+
+Le client tape son code dans le panier : le site le vérifie auprès de Stripe, affiche la remise, puis Stripe l'applique au paiement. La remise porte sur les pièces (pas sur la livraison). Le code utilisé et le montant de la remise apparaissent dans `/admin` et dans l'export CSV.
+
+Deux codes de test existent dans ton compte Stripe de test : `BIENVENUE10` (-10 %) et `MERCI5` (-5 €). **Si tu avais déjà créé la base Supabase**, relance `supabase/schema.sql` dans le SQL Editor (il ajoute les colonnes du code promo sans rien effacer).
 
 ## 3. Variables d'environnement
 
@@ -205,7 +213,8 @@ Vérifie le calcul des prix (early bird, pack), les états par date, et directem
 
 ## 10. Choses à savoir
 
-- **Early bird** : les 15 premières pièces (tous designs) ou les 48 premières heures, la première condition atteinte. Le prix est calculé par le serveur au moment de la réservation. Deux pièces en early bird (2 × 32 € = 64 €) coûtent moins que le pack (65 €) : le site applique toujours le prix le plus bas.
+- **Early bird** : **désactivé pour l'instant** (`earlyBird.enabled: false` dans `config/drop.ts`) : tout est vendu au prix normal, et rien ne s'affiche sur le site. Pour le réactiver : mettre `true` (les 15 premières pièces ou les 48 premières heures, au prix `prices.earlyBird`). Le calcul reste testé.
+- **Codes de réduction** : voir la partie 2.6.
 - **Seuil de fabrication** : l'admin compte les *commandes payées* (45 au total, 20 par design). Si tu préfères compter des *pièces*, dis-le, c'est un petit changement dans `lib/admin-data.ts`.
 - **Réservation** : 15 minutes. Stripe impose 30 minutes minimum pour la page de paiement ; un paiement tardif est accepté si le stock est encore là, sinon remboursé automatiquement.
 - **Erreur d'écriture sur le visuel Guadeloupe** : le mockup affiche « GUADLOUPEAN » (sans E). À vérifier avant la production.

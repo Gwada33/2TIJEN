@@ -36,7 +36,6 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const mode = buyable ? "open" : phase === "closed" ? "closed" : "before";
   const taken = piecesTaken(stock);
   const unit = currentUnitPrice(taken, now);
-  const earlyBirdLeft = unit.earlyBird ? Math.max(drop.earlyBird.maxPieces - taken, 0) : null;
 
   const designs: CartDesign[] = drop.designs.map((d) => ({
     id: d.id,
@@ -155,11 +154,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           sizes={[...SIZES]}
           mode={mode}
           opensLabel={`le ${formatDay(opensAt())}`}
-          price={{ current: formatEuros(unit.amount), regular: unit.earlyBird ? formatEuros(drop.prices.regular) : null }}
-          earlyBirdLeft={earlyBirdLeft}
+          price={formatEuros(unit.amount)}
           pack={{ price: formatEuros(drop.prices.pack), regular: formatEuros(drop.prices.regular * 2) }}
           lowStock={drop.lowStockThreshold}
-          earlyBirdSaving={unit.earlyBird ? formatEuros(drop.prices.regular - drop.prices.earlyBird) : null}
           deliveryEstimate={`${formatDay(estimatedDelivery().from)} – ${formatDay(estimatedDelivery().to, true)}`}
         />
 

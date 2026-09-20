@@ -13,7 +13,7 @@ import { db } from "@/lib/supabase";
 export const metadata: Metadata = { title: "Merci !", robots: { index: false } };
 
 type Piece = { designId: string; size: string; number: number; total: number; unitAmount: number | null };
-type Order = { pieces: Piece[]; total: number | null; shipping: number | null; delivery: "pickup" | "shipping" | null; email: string | null };
+type Order = { pieces: Piece[]; discount: number; promoCode: string | null; total: number | null; shipping: number | null; delivery: "pickup" | "shipping" | null; email: string | null };
 
 const CONFETTI_COLORS = ["#d7bc4b", "#b5549f", "#ece8df", "#285db2", "#2e9c2e", "#b8512c", "#40959b", "#f6dcea", "#e2443a", "#acdaed"];
 const CONFETTI_SHAPES = [
@@ -51,6 +51,8 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
     mode ??= "simulation";
     order = {
       pieces: demoData.pieces.map((p) => ({ designId: p.designId, size: p.size, number: p.number, total: demoTotalFor(p.designId), unitAmount: p.unitAmount })),
+      discount: demoData.discount,
+      promoCode: demoData.promoCode,
       total: demoData.total,
       shipping: demoData.shipping,
       delivery: demoData.delivery,
@@ -61,7 +63,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
     try {
       const { data } = await db()
         .from("orders")
-        .select("amount_total, shipping_amount, delivery_method, email, order_items(design_id, size, piece_number, unit_amount)")
+        .select("amount_total, discount_amount, promo_code, shipping_amount, delivery_method, email, order_items(design_id, size, piece_number, unit_amount)")
         .eq("stripe_session_id", sessionId)
         .maybeSingle();
       const designs = await db().from("designs").select("id, total_pieces");
@@ -69,6 +71,8 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
       if (data?.order_items?.length) {
         order = {
           pieces: data.order_items.map((i) => ({ designId: i.design_id, size: i.size, number: i.piece_number, total: totals.get(i.design_id) ?? 0, unitAmount: i.unit_amount })),
+          discount: data.discount_amount ?? 0,
+          promoCode: data.promo_code ?? null,
           total: data.amount_total,
           shipping: data.shipping_amount,
           delivery: data.delivery_method === "shipping" ? "shipping" : "pickup",
@@ -148,6 +152,7 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
 
             {order.total !== null && (
               <dl className="merci-in mt-6 space-y-2 rounded-3xl border border-line p-5 text-sm" style={{ "--d": "1.1s" } as React.CSSProperties}>
+                {order.discount > 0 && <div className="flex justify-between gap-4"><dt className="text-muted">Code {order.promoCode}</dt><dd className="text-sun">−{formatEuros(order.discount)}</dd></div>}
                 <div className="flex justify-between gap-4"><dt className="shrink-0 text-muted">Livraison</dt><dd className="text-right">{order.delivery === "shipping" ? drop.shipping.metropoleLabel : drop.shipping.pickupLabel}{order.shipping ? ` · ${formatEuros(order.shipping)}` : ""}</dd></div>
                 <div className="flex justify-between border-t border-line pt-3 font-heavy text-base"><dt>Total payé</dt><dd>{formatEuros(order.total)}</dd></div>
               </dl>

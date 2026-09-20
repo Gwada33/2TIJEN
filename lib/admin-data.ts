@@ -13,6 +13,8 @@ export type AdminOrder = {
   delivery_method: string | null;
   shipping_address: Record<string, string | null> | null;
   amount_total: number;
+  promo_code: string | null;
+  discount_amount: number | null;
   status: string;
   order_items: { design_id: string; size: string; piece_number: number; unit_amount: number; early_bird: boolean; pack: boolean }[];
 };

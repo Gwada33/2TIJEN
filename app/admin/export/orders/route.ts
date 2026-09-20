@@ -6,7 +6,7 @@ export async function GET() {
   if (!(await isAdmin())) return new Response("Non autorisé", { status: 401 });
   const { orders } = await loadAdminData();
   const csv = toCsv(
-    ["Date", "Nom", "E-mail", "Téléphone", "Livraison", "Adresse", "Pièces (design taille n°)", "Montant (€)", "Statut"],
+    ["Date", "Nom", "E-mail", "Téléphone", "Livraison", "Adresse", "Pièces (design taille n°)", "Code promo", "Remise (€)", "Montant (€)", "Statut"],
     orders.map((o) => [
       o.created_at,
       o.name,
@@ -15,6 +15,8 @@ export async function GET() {
       o.delivery_method === "shipping" ? "Envoi" : "Main propre",
       formatAddress(o.shipping_address),
       o.order_items.map((i) => `${i.design_id} ${i.size} n°${i.piece_number}`).join(" | "),
+      o.promo_code ?? "",
+      ((o.discount_amount ?? 0) / 100).toFixed(2).replace(".", ","),
       (o.amount_total / 100).toFixed(2).replace(".", ","),
       o.status,
     ]),

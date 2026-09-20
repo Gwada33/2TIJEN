@@ -20,8 +20,8 @@ export default function Page() {
       <h2>3. Prix</h2>
       <p>
         Prix en euros, TTC <TODO>vérifier le régime de TVA, ex. franchise en base</TODO> : {formatEuros(drop.prices.regular)} par t-shirt,
-        {" "}{formatEuros(drop.prices.earlyBird)} pendant l&apos;offre early bird (dans la limite de {drop.earlyBird.maxPieces} pièces et de {drop.earlyBird.durationHours} h après l&apos;ouverture),
-        pack 2 designs à {formatEuros(drop.prices.pack)}. Les frais de livraison sont indiqués avant le paiement.
+        {drop.earlyBird.enabled && <>{" "}{formatEuros(drop.prices.earlyBird)} pendant l&apos;offre early bird (dans la limite de {drop.earlyBird.maxPieces} pièces et de {drop.earlyBird.durationHours} h après l&apos;ouverture),</>}
+        {" "}pack 2 designs à {formatEuros(drop.prices.pack)}. Les frais de livraison sont indiqués avant le paiement.
       </p>
       <h2>4. Commande et paiement</h2>
       <p>Le paiement est exigible en totalité à la commande, par carte bancaire (ou Apple Pay / Google Pay) via Stripe. Les pièces sont réservées {drop.reservationMinutes} minutes pendant le paiement. La commande est confirmée par e-mail avec le numéro de chaque pièce.</p>

@@ -1,29 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { computeQuote, validateCart, CartError } from "@/lib/pricing";
 import { canPurchase, getPhase, isEarlyAccessWindow } from "@/lib/drop-state";
+import { drop } from "@/config/drop";
 
 const during = new Date("2026-10-15T12:00:00-04:00"); // après les 48 h early bird
 const opening = new Date("2026-10-12T18:30:00-04:00"); // dans les 48 h
+// L'early bird est désactivé dans la config : on le réactive ici pour tester son moteur.
+const EB = { prices: drop.prices, earlyBird: { ...drop.earlyBird, enabled: true } };
 
 describe("prix", () => {
+  it("early bird désactivé (config actuelle) : prix normal même à l'ouverture", () => {
+    expect(drop.earlyBird.enabled).toBe(false);
+    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 0, opening);
+    expect(q.total).toBe(3500);
+  });
+
   it("prix normal après les 48 h", () => {
     const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 0, during);
     expect(q.total).toBe(3500);
   });
 
   it("early bird : 32 € dans les 48 h et sous les 15 pièces", () => {
-    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 0, opening);
+    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 0, opening, EB);
     expect(q.total).toBe(3200);
   });
 
   it("early bird : la 15e pièce est à 32 €, la 16e à 35 €", () => {
-    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 3 }], 13, opening);
+    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 3 }], 13, opening, EB);
     expect(q.units.map((u) => u.unitAmount)).toEqual([3200, 3200, 3500]);
     expect(q.total).toBe(3200 * 2 + 3500);
   });
 
   it("early bird terminé après la 15e pièce", () => {
-    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 15, opening);
+    const q = computeQuote([{ designId: "guadeloupean", size: "M", qty: 1 }], 15, opening, EB);
     expect(q.total).toBe(3500);
   });
 
@@ -50,6 +59,7 @@ describe("prix", () => {
       ],
       0,
       opening,
+      EB,
     );
     expect(q.total).toBe(6400);
   });

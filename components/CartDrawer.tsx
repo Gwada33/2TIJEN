@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatEuros } from "@/lib/format";
 import { useCart } from "@/components/CartProvider";
 
@@ -45,6 +45,7 @@ export function CartDrawer() {
     };
   }, [c.open]);
 
+  const [promoInput, setPromoInput] = useState("");
   const design = (id: string) => c.designs.find((d) => d.id === id)!;
   const opt = c.deliveryOptions;
 
@@ -84,7 +85,7 @@ export function CartDrawer() {
                   const stock = d.available[l.size];
                   return (
                     <li key={`${l.designId}-${l.size}`} className="flex gap-4 py-4">
-                      <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-2xl bg-surface">
+                      <div className="relative h-20 w-24 shrink-0 overflow-hidden bg-surface">
                         <Image src={d.images.back} alt="" fill sizes="96px" className="object-contain p-1" />
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col justify-between">
@@ -128,7 +129,7 @@ export function CartDrawer() {
                       ["shipping", opt.shippingLabel, opt.shippingPrice],
                     ] as const
                   ).map(([value, label, cost]) => (
-                    <label key={value} className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-4 ${c.delivery === value ? "border-sun bg-surface-2" : "border-line"}`}>
+                    <label key={value} className={`flex cursor-pointer items-center gap-3 border p-4 ${c.delivery === value ? "border-sun bg-surface-2" : "border-line"}`}>
                       <input type="radio" name="delivery" value={value} checked={c.delivery === value} onChange={() => c.setDelivery(value)} className="h-4 w-4 accent-sun" />
                       <span className="flex-1 text-sm leading-tight">{label}</span>
                       <span className="text-sm text-muted">{cost}</span>
@@ -139,6 +140,36 @@ export function CartDrawer() {
             </div>
 
             <div className="border-t border-line bg-night px-5 pb-5 pt-4">
+              {/* Code de réduction */}
+              {c.quote?.discount ? (
+                <div className="mb-4 flex items-center justify-between border border-sun/50 bg-surface px-3 py-2 text-sm">
+                  <span><span className="font-heavy text-xs tracking-wider">{c.quote.discount.code}</span> <span className="text-muted">appliqué</span></span>
+                  <button type="button" onClick={() => { c.clearPromo(); setPromoInput(""); }} className="text-xs text-muted underline underline-offset-4 hover:text-ink">Retirer</button>
+                </div>
+              ) : (
+                <form
+                  className="mb-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (promoInput.trim()) c.applyPromo(promoInput);
+                  }}
+                >
+                  <label htmlFor="promo" className="sr-only">Code de réduction</label>
+                  <div className="flex gap-2">
+                    <input
+                      id="promo"
+                      value={promoInput}
+                      onChange={(e) => setPromoInput(e.target.value)}
+                      placeholder="Code de réduction"
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      className="min-w-0 flex-1 border border-line bg-night px-3 py-2.5 text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted focus:border-sun focus:outline-none"
+                    />
+                    <button type="submit" className="border border-ink px-4 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-night">Appliquer</button>
+                  </div>
+                  {c.quote?.promoError && c.promo && <p role="alert" className="mt-2 text-sm font-bold text-orange">{c.quote.promoError}</p>}
+                </form>
+              )}
               <div className="space-y-1" aria-live="polite">
                 {c.quote?.lines.map((l) => (
                   <p key={l.label} className="flex justify-between gap-4 text-sm text-muted">
@@ -148,6 +179,9 @@ export function CartDrawer() {
                 ))}
                 {c.quote && (
                   <>
+                    {c.quote.discount && (
+                      <p className="flex justify-between text-sm text-muted"><span>Code {c.quote.discount.code}</span><span className="text-sun">−{formatEuros(c.quote.discount.amount)}</span></p>
+                    )}
                     <p className="flex justify-between text-sm text-muted"><span>Livraison</span><span className="text-ink">{c.quote.shipping === 0 ? "Gratuite" : formatEuros(c.quote.shipping)}</span></p>
                     <p className="flex justify-between border-t border-line pt-3 font-heavy text-lg"><span>Total</span><span>{formatEuros(c.quote.total)}</span></p>
                   </>

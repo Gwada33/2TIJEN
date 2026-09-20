@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { drop, getDesign } from "@/config/drop";
 import { canPurchase, getNow } from "@/lib/drop-state";
 import { automaticTaxEnabled, buildCheckoutParams } from "@/lib/checkout-session";
+import { lookupPromo, normalizeCode, type Promo } from "@/lib/promo";
 import { demoCreateSession, demoStripeEnabled } from "@/lib/demo-store";
 import { demoMode } from "@/lib/stock";
 import { CartError, computeQuote, validateCart } from "@/lib/pricing";
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Trop de tentatives, réessaie dans une minute." }, { status: 429 });
   }
 
-  let body: { cart?: unknown; delivery?: unknown; accessToken?: unknown };
+  let body: { cart?: unknown; delivery?: unknown; accessToken?: unknown; promo?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -46,10 +47,19 @@ export async function POST(request: NextRequest) {
   }
   const delivery = body.delivery === "shipping" ? "shipping" : "pickup";
 
+  // Code de réduction : revérifié ICI (le navigateur n'est jamais cru sur parole).
+  let promo: Promo | null = null;
+  if (normalizeCode(body.promo)) {
+    const provisional = computeQuote(cart, 0, now).total; // sert seulement au minimum d'achat éventuel du code
+    const r = await lookupPromo(body.promo, provisional);
+    if (!r.ok) return Response.json({ error: r.error }, { status: 400 });
+    promo = r.promo;
+  }
+
   // Mode démo (développement) : achat simulé, sans Stripe ni base de données.
   if (demoMode()) {
     try {
-      const order = demoCreateSession(cart, delivery, now);
+      const order = demoCreateSession(cart, delivery, now, promo ? { code: promo.code, discount: promo.discount } : undefined);
       // Sans clé Stripe de test : fausse page de paiement. Avec une clé sk_test_ : vraie page Stripe (mode test).
       if (!demoStripeEnabled()) return Response.json({ url: `/demo-paiement/${order.id}` });
       const session = await stripe().checkout.sessions.create(
@@ -58,7 +68,8 @@ export async function POST(request: NextRequest) {
           automaticTax: automaticTaxEnabled(),
           delivery,
           reference: order.id,
-          metadata: { demo_order: order.id, delivery, drop: drop.name },
+          metadata: { demo_order: order.id, delivery, drop: drop.name, ...(promo ? { promo_code: promo.code } : {}) },
+          promotionCodeId: promo?.id,
           successUrl: `${siteUrl()}/merci?demo_session={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${siteUrl()}/#pieces`,
         }),
@@ -128,7 +139,8 @@ export async function POST(request: NextRequest) {
         automaticTax: automaticTaxEnabled(),
         delivery,
         reference: reservationId,
-        metadata: { reservation_id: reservationId, delivery, drop: drop.name },
+        metadata: { reservation_id: reservationId, delivery, drop: drop.name, ...(promo ? { promo_code: promo.code } : {}) },
+        promotionCodeId: promo?.id,
         successUrl: `${siteUrl()}/merci?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${siteUrl()}/#pieces`,
       }),

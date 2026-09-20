@@ -59,11 +59,13 @@ export default async function AdminPage() {
       </section>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {drop.earlyBird.enabled && (
         <section aria-labelledby="early" className={box}>
           <h2 id="early" className="text-xl font-black">Early bird</h2>
           <p className="mt-2 text-3xl font-black">{data.earlyBird.used} / {data.earlyBird.max}</p>
           <p className="text-muted">pièces vendues au prix early bird · {data.earlyBird.active ? "encore actif" : "terminé"}</p>
         </section>
+        )}
         <section aria-labelledby="wl" className={box}>
           <h2 id="wl" className="text-xl font-black">Liste d&apos;attente</h2>
           <p className="mt-2 text-3xl font-black">{data.waitlist.active}</p>
@@ -115,7 +117,7 @@ export default async function AdminPage() {
                       </div>
                     ))}
                   </td>
-                  <td className="pr-3 font-bold">{formatEuros(o.amount_total)}</td>
+                  <td className="pr-3 font-bold">{formatEuros(o.amount_total)}{o.promo_code && <><br /><span className="font-normal text-muted">{o.promo_code} (−{formatEuros(o.discount_amount ?? 0)})</span></>}</td>
                   <td className={o.status === "paid" ? "" : "font-bold text-orange"}>{STATUS[o.status] ?? o.status}</td>
                 </tr>
               ))}

@@ -74,6 +74,10 @@ create table if not exists orders (
   created_at            timestamptz not null default now()
 );
 
+-- Code de réduction utilisé (ajouté après la première version : relancer ce fichier suffit)
+alter table orders add column if not exists promo_code      text;
+alter table orders add column if not exists discount_amount int not null default 0;
+
 create table if not exists order_items (
   id           bigserial primary key,
   order_id     uuid not null references orders(id) on delete cascade,

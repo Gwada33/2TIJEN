@@ -70,7 +70,7 @@ export function computeQuote(
   rules: PricingRules = drop,
   designIds: string[] = drop.designs.map((d) => d.id),
 ): Quote {
-  const earlyByTime = now < earlyBirdEndsAt();
+  const earlyByTime = rules.earlyBird.enabled && now < earlyBirdEndsAt();
 
   // 1. Une entrée par pièce physique, dans l'ordre du panier.
   const units: Unit[] = [];
@@ -163,6 +163,6 @@ export function computeQuote(
 
 /** Prix affichable « à partir de » pour le site (sans panier). */
 export function currentUnitPrice(piecesSold: number, now: Date): { amount: number; earlyBird: boolean } {
-  const earlyBird = now < earlyBirdEndsAt() && piecesSold < drop.earlyBird.maxPieces;
+  const earlyBird = drop.earlyBird.enabled && now < earlyBirdEndsAt() && piecesSold < drop.earlyBird.maxPieces;
   return { amount: earlyBird ? drop.prices.earlyBird : drop.prices.regular, earlyBird };
 }

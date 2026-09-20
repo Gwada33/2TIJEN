@@ -74,6 +74,9 @@ body {
 .btn-primary { background: var(--color-sun); color: var(--color-night); }
 .btn-primary:hover { background: #fff; }
 .btn-primary:disabled, .btn-primary[aria-disabled="true"] { background: #2a2a30; color: #b8b4b7; cursor: not-allowed; }
+/* Variante à angles droits (cartes produit). */
+.btn-square { border-radius: 4px; }
+.btn-square .btn-disc { border-radius: 2px; }
 .btn-ghost { border: 1px solid var(--color-ink); color: var(--color-ink); background: transparent; }
 .btn-ghost:hover { background: rgb(244 241 236 / 0.1); }
 .btn-disc {

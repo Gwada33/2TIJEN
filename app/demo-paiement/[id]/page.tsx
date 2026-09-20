@@ -35,6 +35,7 @@ export default async function Page({ params, searchParams }: PageProps<"/demo-pa
                 <span className="font-bold">{formatEuros(l.unitAmount * l.quantity)}</span>
               </li>
             ))}
+            {order.discount > 0 && <li className="flex justify-between text-sm"><span>Code {order.promoCode}</span><span className="font-bold text-sun">−{formatEuros(order.discount)}</span></li>}
             <li className="flex justify-between text-sm"><span>Livraison</span><span className="font-bold">{order.shipping === 0 ? "Gratuite" : formatEuros(order.shipping)}</span></li>
             <li className="flex justify-between border-t border-line pt-3 font-heavy text-xl"><span>Total</span><span>{formatEuros(order.total)}</span></li>
           </ul>

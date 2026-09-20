@@ -45,6 +45,8 @@ export const drop = {
     pack: 6500,
   },
   earlyBird: {
+    /** Désactivé pour l'instant : tout est vendu au prix normal. Mettre true pour le réactiver (prix `prices.earlyBird`). */
+    enabled: false as boolean,
     /** Nombre de premières pièces vendues (tous designs confondus) au prix early bird. */
     maxPieces: 15,
     /** …ou durée depuis l'ouverture. La première condition atteinte met fin à l'early bird. */

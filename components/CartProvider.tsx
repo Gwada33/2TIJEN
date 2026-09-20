@@ -29,6 +29,9 @@ export type Quote = {
   total: number;
   pieces: number;
   unavailable: string[];
+  /** Remise du code promo appliqué (calculée par le serveur), sinon null. */
+  discount: { code: string; label: string; amount: number } | null;
+  promoError: string | null;
 };
 export type Delivery = "pickup" | "shipping";
 
@@ -62,7 +65,7 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-type Stored = { cart: CartItem[]; delivery: Delivery };
+type Stored = { cart: CartItem[]; delivery: Delivery; promo: string };
 
 type CartContextValue = {
   canBuy: boolean;
@@ -72,6 +75,10 @@ type CartContextValue = {
   maxPieces: number;
   delivery: Delivery;
   setDelivery: (d: Delivery) => void;
+  /** Code promo saisi (vérifié par le serveur à chaque calcul du devis). */
+  promo: string;
+  applyPromo: (code: string) => void;
+  clearPromo: () => void;
   deliveryOptions: { pickupLabel: string; pickupPrice: string; shippingLabel: string; shippingPrice: string };
   quote: Quote | null;
   quoteError: string;
@@ -111,7 +118,7 @@ export function CartProvider(props: {
 
   // Panier lu dans la mémoire du navigateur, remis d'aplomb : designs et tailles connus,
   // quantités entières, jamais plus que le stock ni que le maximum par commande.
-  const { cart, delivery } = useMemo<Stored>(() => {
+  const { cart, delivery, promo } = useMemo<Stored>(() => {
     let parsed: Partial<Stored> = {};
     try {
       parsed = raw ? JSON.parse(raw) : {};
@@ -129,7 +136,8 @@ export function CartProvider(props: {
       clean.push({ designId: design.id, size, qty });
       total += qty;
     }
-    return { cart: clean, delivery: parsed.delivery === "shipping" ? "shipping" : "pickup" };
+    const promo = typeof parsed.promo === "string" ? parsed.promo.slice(0, 40) : "";
+    return { cart: clean, delivery: parsed.delivery === "shipping" ? "shipping" : "pickup", promo };
   }, [raw, designs, maxPieces]);
 
   const save = useCallback((next: Stored) => write(JSON.stringify(next)), []);
@@ -151,7 +159,7 @@ export function CartProvider(props: {
       if (existing) existing.qty += 1;
       else next.push({ designId: it.designId, size: it.size, qty: 1 });
     }
-    save({ cart: next, delivery });
+    save({ cart: next, delivery, promo });
     setOpen(true);
   };
 
@@ -160,11 +168,11 @@ export function CartProvider(props: {
     if (!design) return;
     const others = cart.filter((l) => !(l.designId === designId && l.size === size)).reduce((n, l) => n + l.qty, 0);
     const clamped = Math.max(0, Math.min(qty, design.available[size], maxPieces - others));
-    save({ cart: cart.map((l) => (l.designId === designId && l.size === size ? { ...l, qty: clamped } : l)).filter((l) => l.qty > 0), delivery });
+    save({ cart: cart.map((l) => (l.designId === designId && l.size === size ? { ...l, qty: clamped } : l)).filter((l) => l.qty > 0), delivery, promo });
   };
 
   // ---- Devis : toujours calculé par le serveur ----
-  const cartKey = JSON.stringify([cart, delivery]);
+  const cartKey = JSON.stringify([cart, delivery, promo]);
   const [fetched, setFetched] = useState<{ key: string; quote: Quote } | null>(null);
   const [quoteError, setQuoteError] = useState("");
   useEffect(() => {
@@ -175,7 +183,7 @@ export function CartProvider(props: {
         const res = await fetch("/api/quote", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cart, delivery }),
+          body: JSON.stringify({ cart, delivery, promo }),
           signal: controller.signal,
         });
         const data = await res.json();
@@ -204,7 +212,7 @@ export function CartProvider(props: {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, delivery, accessToken }),
+        body: JSON.stringify({ cart, delivery, accessToken, promo: quote?.discount ? promo : undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -225,7 +233,10 @@ export function CartProvider(props: {
     pieces,
     maxPieces,
     delivery,
-    setDelivery: (d) => save({ cart, delivery: d }),
+    setDelivery: (d) => save({ cart, delivery: d, promo }),
+    promo,
+    applyPromo: (code) => save({ cart, delivery, promo: code.trim().toUpperCase() }),
+    clearPromo: () => save({ cart, delivery, promo: "" }),
     deliveryOptions: props.deliveryOptions,
     quote,
     quoteError,

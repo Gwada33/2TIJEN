@@ -88,6 +88,12 @@ async function fulfil(session: Stripe.Checkout.Session) {
     await sendRefundNotice(email);
     return;
   }
+  // Code de réduction : on garde une trace (le montant payé, lui, est déjà celui après remise).
+  const promoCode = session.metadata?.promo_code ?? null;
+  const discount = session.total_details?.amount_discount ?? 0;
+  if (result.order_id && (promoCode || discount > 0)) {
+    await db().from("orders").update({ promo_code: promoCode, discount_amount: discount }).eq("id", result.order_id);
+  }
   if (result.status === "unknown_reservation") throw new Error(`Réservation inconnue pour ${session.id}`);
 
   // « created » ou « duplicate » : on envoie l'e-mail s'il n'est pas déjà parti
