@@ -98,10 +98,7 @@ function ProductCard(props: {
           href={href}
           aria-label={`${d.name} : voir la pièce`}
           className="relative block aspect-[5/4] w-full overflow-hidden"
-          style={{
-            // fond de studio : centre éclairé, bords un peu plus sombres
-            background: `radial-gradient(ellipse 75% 70% at 50% 42%, color-mix(in srgb, ${d.backdrop}, white 45%), ${d.backdrop} 65%, color-mix(in srgb, ${d.backdrop}, black 9%))`,
-          }}
+          style={{ backgroundColor: d.backdrop }}
           onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
           onPointerLeave={(e) => { if (e.pointerType === "mouse") setFlipped(false); }}
         >
@@ -121,7 +118,7 @@ function ProductCard(props: {
           aria-pressed={flipped}
           aria-label={`${d.name} : voir ${flipped ? "le motif" : "l'autre côté"}`}
           onClick={() => setFlipped((f) => !f)}
-          className="absolute bottom-2 right-0 grid h-11 w-11 place-items-center bg-night/70 text-base backdrop-blur"
+          className="absolute bottom-2 right-0 grid h-11 w-11 place-items-center bg-night text-base"
         >
           <span aria-hidden="true">↻</span>
         </button>

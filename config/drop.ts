@@ -148,7 +148,7 @@ export const drop = {
       id: "guadeloupean",
       name: "Guadeloupean Represent",
       madras: "/madras.webp",
-      backdrop: "#e9dcc3",
+      backdrop: "#f0c94a",
       photos: [],
       images: {
         front: "/products/guadeloupean-front.webp",
@@ -164,7 +164,7 @@ export const drop = {
       id: "martinican",
       name: "Martinican Represent",
       madras: "/madras-martinican.webp",
-      backdrop: "#b8c8e6",
+      backdrop: "#8fc3ee",
       photos: [],
       images: {
         front: "/products/martinican-front.webp",
