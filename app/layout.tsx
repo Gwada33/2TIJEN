@@ -34,7 +34,7 @@ export const viewport: Viewport = { themeColor: "#0a0a0b" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${body.variable} ${slab.variable} ${heavy.variable} ${script.variable}`}>
+    <html lang="fr" data-scroll-behavior="smooth" className={`${body.variable} ${slab.variable} ${heavy.variable} ${script.variable}`}>
       <body className="min-h-screen">
         <a
           href="#contenu"
