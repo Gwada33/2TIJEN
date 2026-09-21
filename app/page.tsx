@@ -38,10 +38,10 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </h1>
         </div>
 
-        <div className="relative aspect-[6/5] w-full md:col-start-2 md:row-span-2 md:row-start-1">
+        <div className="flex items-center justify-center md:col-start-2 md:row-span-2 md:row-start-1">
           {drop.designs.map((d, i) => (
-            <Link key={d.id} href={`/pieces/${d.id}`} className={`absolute aspect-[5/4] w-[72%] ${i === 0 ? "left-0 top-0" : "bottom-0 right-0"}`}>
-              <Image src={d.images.back} alt={d.alt.back} fill priority={i === 0} sizes="(min-width: 768px) 38vw, 72vw" className="object-contain" />
+            <Link key={d.id} href={`/pieces/${d.id}`} className={`relative aspect-[5/4] w-[54%] shrink-0 ${i === 0 ? "" : "-ml-[8%]"}`}>
+              <Image src={d.images.back} alt={d.alt.back} fill priority={i === 0} sizes="(min-width: 768px) 28vw, 54vw" className="object-contain" />
             </Link>
           ))}
         </div>

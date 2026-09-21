@@ -98,11 +98,14 @@ function ProductCard(props: {
           href={href}
           aria-label={`${d.name} : voir la pièce`}
           className="relative block aspect-[5/4] w-full overflow-hidden"
-          style={{ backgroundColor: d.backdrop }}
+          style={{
+            // fond de studio : centre éclairé, bords un peu plus sombres
+            background: `radial-gradient(ellipse 75% 70% at 50% 42%, color-mix(in srgb, ${d.backdrop}, white 45%), ${d.backdrop} 65%, color-mix(in srgb, ${d.backdrop}, black 9%))`,
+          }}
           onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
           onPointerLeave={(e) => { if (e.pointerType === "mouse") setFlipped(false); }}
         >
-          <span className="flip-stage absolute inset-0 block scale-[1.06]">
+          <span className="flip-stage absolute inset-0 block scale-[0.94]">
             <span className="flip-card block" data-flipped={flipped}>
               <span className="flip-face">
                 <Image src={d.images.back} alt={flipped ? "" : d.alt.back} fill sizes="(min-width: 768px) 46vw, 92vw" className="object-contain" />
