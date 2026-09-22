@@ -27,48 +27,47 @@ const FONTS: Font[] = [
   { family: "'Courier New', Courier, monospace", weight: 700, size: 0.95 },
 ];
 
-// Couleurs des papiers : palette resserrée façon sérigraphie (encres un peu rabattues, pas de
-// néon), pour que les lettres se répondent au lieu de piocher au hasard dans toutes les teintes.
-const PAPERS = [
-  "#e8b23d", // or
-  "#d1552e", // corail brûlé
-  "#a83f7a", // magenta profond
-  "#6b3a68", // prune
-  "#23548f", // bleu océan
-  "#2f7d3a", // vert palme
-  "#2f8a86", // sarcelle
-  "#f0e6d2", // crème papier
-  "#171512", // encre
-];
-const INKS = ["#171512", "#f7f3ea", "#e8b23d", "#f0e6d2", "#d1552e", "#23548f", "#2f7d3a", "#a83f7a"];
-const BORDERS = ["#f7f3ea", "#f0e6d2", "#171512", "#e8b23d", "#2f8a86"];
+// Couleurs des papiers : SEULEMENT 4 teintes (+ crème et encre en neutres), comme une vraie
+// sérigraphie à quelques couleurs de rack — pour que l'œil reconnaisse un jeu de couleurs choisi,
+// pas une pioche au hasard. Rouge/or/sarcelle/rose : le trio drapeau + un accent carnaval.
+const RED = "#d3402c";
+const GOLD = "#f0af1f";
+const TEAL = "#1a8a82";
+const PINK = "#d43c8f";
+const CREAM = "#f5ecd6";
+const INK = "#171310";
+const PAPERS = [RED, GOLD, TEAL, PINK, CREAM, INK];
+const INKS = [INK, CREAM, GOLD, RED, TEAL, PINK];
+const BORDERS = [CREAM, INK, GOLD, TEAL];
 
 /**
  * Style final de chaque lettre (dans l'ordre du texte, espaces ignorés) : mêmes couleurs
  * que les lettres du t-shirt Guadeloupean Represent. Les indices de police renvoient à FONTS.
  */
 type FinalStyle = { paper: string; ink: string; ring?: string; double?: boolean; font: number; lower?: boolean; shape?: string };
+// Rythme : les 4 couleurs + crème + encre reviennent dans le même ordre 3 fois de suite sur les
+// 18 lettres — l'œil reconnaît un jeu de couleurs répété, pas un tirage au hasard lettre par lettre.
 const FINAL_STYLES: FinalStyle[] = [
   // CARIBBEAN
-  { paper: "#f0e6d2", ink: "#6b3a68", ring: "#a83f7a", font: 0 },
-  { paper: "#d1552e", ink: "#f7f3ea", font: 6 },
-  { paper: "#e8b23d", ink: "#171512", ring: "#f7f3ea", font: 0 },
-  { paper: "#f0e6d2", ink: "#171512", font: 2 },
-  { paper: "#6b3a68", ink: "#f7f3ea", ring: "#f0e6d2", double: true, font: 1 },
-  { paper: "#23548f", ink: "#f7f3ea", font: 0 },
-  { paper: "#f0e6d2", ink: "#a83f7a", ring: "#a83f7a", font: 6 },
-  { paper: "#2f8a86", ink: "#f7f3ea", ring: "#f7f3ea", font: 2 },
-  { paper: "#e8b23d", ink: "#171512", font: 0 },
+  { paper: RED, ink: CREAM, ring: CREAM, font: 0 },
+  { paper: GOLD, ink: INK, ring: INK, font: 6 },
+  { paper: TEAL, ink: CREAM, font: 0 },
+  { paper: PINK, ink: CREAM, ring: CREAM, font: 2 },
+  { paper: CREAM, ink: INK, ring: RED, double: true, font: 1 },
+  { paper: INK, ink: CREAM, ring: GOLD, font: 0 },
+  { paper: RED, ink: CREAM, font: 6 },
+  { paper: GOLD, ink: INK, ring: CREAM, font: 2 },
+  { paper: TEAL, ink: CREAM, ring: CREAM, font: 0 },
   // REPRESENT
-  { paper: "#2f7d3a", ink: "#f7f3ea", ring: "#f0e6d2", double: true, font: 6 },
-  { paper: "#e8b23d", ink: "#6b3a68", font: 0 },
-  { paper: "#23548f", ink: "#f0e6d2", font: 2 },
-  { paper: "#e8b23d", ink: "#171512", ring: "#f7f3ea", font: 6, lower: true },
-  { paper: "#2f8a86", ink: "#171512", font: 0, lower: true, shape: "ellipse(50% 50% at 50% 50%)" },
-  { paper: "#2f8a86", ink: "#f7f3ea", font: 6 },
-  { paper: "#f0e6d2", ink: "#171512", ring: "#e8b23d", font: 0 },
-  { paper: "#6b3a68", ink: "#f7f3ea", font: 1 },
-  { paper: "#2f7d3a", ink: "#f7f3ea", ring: "#f0e6d2", font: 6 },
+  { paper: PINK, ink: CREAM, ring: CREAM, double: true, font: 6 },
+  { paper: CREAM, ink: INK, ring: INK, font: 0 },
+  { paper: INK, ink: CREAM, font: 2 },
+  { paper: RED, ink: CREAM, ring: CREAM, font: 6, lower: true },
+  { paper: GOLD, ink: INK, font: 0, lower: true, shape: "ellipse(50% 50% at 50% 50%)" },
+  { paper: TEAL, ink: CREAM, ring: CREAM, font: 6 },
+  { paper: PINK, ink: CREAM, font: 0 },
+  { paper: CREAM, ink: INK, ring: GOLD, font: 1 },
+  { paper: INK, ink: CREAM, ring: CREAM, font: 6 },
 ];
 
 type Tile = {
@@ -127,12 +126,18 @@ function tornEdges(r: Rand, pts: [number, number][], jag: number): [number, numb
   return out;
 }
 
-/** Forme découpée au hasard, en pourcentages de la boîte : la plupart du temps un bord déchiré. */
+const poly = (pts: [number, number][]) => `polygon(${pts.map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`).join(", ")})`;
+
+/**
+ * Forme découpée au hasard, en pourcentages de la boîte. La plupart du temps : un rectangle
+ * (comme une étiquette découpée aux ciseaux dans une page) dont chaque bord est arraché à la
+ * main, garde son contour reconnaissable plutôt qu'un blob organique.
+ */
 function randomShape(r: Rand): string {
   const roll = r();
   if (roll < 0.08) return "ellipse(50% 50% at 50% 50%)";
-  if (roll < 0.14) return "inset(0 round 32%)";
-  if (roll < 0.24) {
+  if (roll < 0.16) return "inset(0 round 30%)";
+  if (roll < 0.26) {
     // pointe vers le haut, comme certains papiers du t-shirt Martinican
     const j = () => between(r, -3, 3);
     const pts: [number, number][] = [
@@ -142,35 +147,25 @@ function randomShape(r: Rand): string {
       [Math.abs(j()), 100],
       [Math.abs(j()), 20 + j()],
     ];
-    return `polygon(${tornEdges(r, pts, 2.5)
-      .map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`)
-      .join(", ")})`;
+    return poly(tornEdges(r, pts, 2.5));
   }
-  // polygone irrégulier : coins et milieux d'arêtes décalés, un coin parfois coupé
-  const m = 10;
+  // Rectangle de base (léger jeu sur les coins pour ne pas être parfaitement carré)...
+  const m = 3;
   const pts: [number, number][] = [
     [between(r, 0, m), between(r, 0, m)],
-    [between(r, 30, 70), between(r, 0, m / 2)],
     [between(r, 100 - m, 100), between(r, 0, m)],
-    [between(r, 100 - m / 2, 100), between(r, 35, 65)],
     [between(r, 100 - m, 100), between(r, 100 - m, 100)],
-    [between(r, 30, 70), between(r, 100 - m / 2, 100)],
     [between(r, 0, m), between(r, 100 - m, 100)],
-    [between(r, 0, m / 2), between(r, 35, 65)],
   ];
-  // on retire au hasard 0 à 3 points d'arête pour varier le nombre de côtés
-  const drop = Math.floor(r() * 4);
-  const edgeIdx = [1, 3, 5, 7].sort(() => r() - 0.5).slice(0, drop);
-  const kept = pts.filter((_, i) => !edgeIdx.includes(i));
-  if (r() < 0.35) {
-    // coin coupé net
-    const c = Math.floor(r() * kept.length);
-    kept[c] = [kept[c][0] + (kept[c][0] < 50 ? 14 : -14), kept[c][1] + (kept[c][1] < 50 ? 4 : -4)];
+  // ... un coin parfois franchement arraché en biais...
+  if (r() < 0.4) {
+    const c = Math.floor(r() * pts.length);
+    const dx = pts[c][0] < 50 ? between(r, 10, 20) : -between(r, 10, 20);
+    const dy = pts[c][1] < 50 ? between(r, 6, 14) : -between(r, 6, 14);
+    pts[c] = [pts[c][0] + dx, pts[c][1] + dy];
   }
-  // bord arraché plutôt que droit sur le pourtour restant
-  return `polygon(${tornEdges(r, kept, 3.2)
-    .map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`)
-    .join(", ")})`;
+  // ... puis chaque bord redécoupé à la main : le contour reste un rectangle, les côtés non.
+  return poly(tornEdges(r, pts, 4.2));
 }
 
 function randomTile(r: Rand, ch: string, rot: number): Tile {
