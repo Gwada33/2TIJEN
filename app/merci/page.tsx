@@ -24,11 +24,14 @@ const CONFETTI_SHAPES = [
 ];
 
 export default async function Merci({ searchParams }: PageProps<"/merci">) {
-  const { ref, demo } = await searchParams;
+  const { ref, demo, t } = await searchParams;
   const reservationId = typeof ref === "string" && /^[0-9a-f-]{36}$/.test(ref) ? ref : null;
+  const attempts = typeof t === "string" ? Number(t) || 0 : 0;
 
   let order: Order | null = null;
   let simulation = false;
+  // "closed" : paiement expiré ou refusé, inutile d'attendre. Sinon on retente un peu avant de renoncer (voir plus bas).
+  let checkoutClosed = false;
 
   // --- Démo (développement) ---
   const demoData = demoMode() && typeof demo === "string" ? demoOrder(demo) : undefined;
@@ -47,7 +50,12 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
     // --- Production : SumUp nous ramène ici. On vérifie le paiement auprès de SumUp (sans attendre sa notification) ---
     try {
       const { data: reservation } = await db().from("reservations").select("checkout_id").eq("id", reservationId).maybeSingle();
-      if (reservation?.checkout_id) await settleCheckout(reservation.checkout_id);
+      if (reservation?.checkout_id) {
+        const status = await settleCheckout(reservation.checkout_id);
+        checkoutClosed = status === "closed";
+      } else if (!reservation) {
+        checkoutClosed = true; // lien invalide ou déjà traité autrement : inutile d'attendre
+      }
 
       const { data } = await db()
         .from("orders")
@@ -72,6 +80,10 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
     }
   }
 
+  // On abandonne l'attente si le paiement est définitivement clos, si on a manqué de ref,
+  // ou après plusieurs essais : mieux vaut le dire clairement que de faire tourner une roue indéfiniment.
+  const giveUp = !order && !simulation && (checkoutClosed || !reservationId || attempts >= 6);
+
   const { from, to } = estimatedDelivery();
   const steps = [
     { title: "Commande confirmée", text: "Tes pièces sont numérotées.", done: true },
@@ -92,15 +104,19 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
         )}
 
         <div className="text-center">
-          <svg viewBox="0 0 52 52" className="mx-auto h-20 w-20" fill="none" aria-hidden="true">
-            <circle className="check-circle" cx="26" cy="26" r="24" stroke="#ffd23f" strokeWidth="2.5" />
-            <path className="check-path" d="M14.5 27.5l8 8 15-17" stroke="#ffd23f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {giveUp ? (
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-2 border-orange text-3xl font-black text-orange" aria-hidden="true">!</div>
+          ) : (
+            <svg viewBox="0 0 52 52" className="mx-auto h-20 w-20" fill="none" aria-hidden="true">
+              <circle className="check-circle" cx="26" cy="26" r="24" stroke="#ffd23f" strokeWidth="2.5" />
+              <path className="check-path" d="M14.5 27.5l8 8 15-17" stroke="#ffd23f" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
           <h1 className="merci-in mt-6 font-heavy text-3xl uppercase tracking-wide sm:text-4xl" style={{ "--d": "0.5s" } as React.CSSProperties}>
-            Merci !
+            {giveUp ? "Paiement non confirmé" : "Merci !"}
           </h1>
           <p className="merci-in mt-3 text-muted" style={{ "--d": "0.65s" } as React.CSSProperties}>
-            {order ? "Ta précommande est confirmée." : "On vérifie ton paiement."}
+            {order ? "Ta précommande est confirmée." : giveUp ? "On n'a pas reçu de confirmation de paiement." : "On vérifie ton paiement."}
             {order?.email ? <> Un e-mail de confirmation part à <span className="text-ink">{order.email}</span>.</> : null}
           </p>
         </div>
@@ -146,6 +162,11 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
               </dl>
             )}
           </>
+        ) : giveUp ? (
+          <div className="mt-12 rounded-3xl border border-orange/50 bg-surface p-6 text-center">
+            <p className="font-heavy text-sm uppercase tracking-wide">Rien à confirmer pour l&apos;instant</p>
+            <p className="mt-2 text-sm text-muted">Si tu as été débité, écris-nous avec cette référence : <span className="text-ink">{reservationId ?? "—"}</span>. Sinon, retente tranquillement.</p>
+          </div>
         ) : (
           <div className="mt-12 rounded-3xl border border-line bg-surface p-6 text-center" role="status">
             <p className="font-heavy text-sm uppercase tracking-wide">Enregistrement de ta commande…</p>
@@ -154,26 +175,28 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
           </div>
         )}
 
-        <section aria-labelledby="titre-suite" className="mt-14">
-          <h2 id="titre-suite" className="font-heavy text-sm uppercase tracking-[0.2em]">Et maintenant ?</h2>
-          <ol className="mt-6">
-            {steps.map((s, i) => (
-              <li key={s.title} className="relative flex gap-4 pb-6 last:pb-0">
-                {i < steps.length - 1 && <span className="absolute left-[0.7rem] top-6 h-full w-px bg-line" aria-hidden="true" />}
-                <span
-                  className={`relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs ${s.done ? "border-sun bg-sun text-night" : "border-line bg-night text-muted"}`}
-                  aria-hidden="true"
-                >
-                  {s.done ? "✓" : i + 1}
-                </span>
-                <div>
-                  <p className="font-bold">{s.title}</p>
-                  <p className="text-sm text-muted">{s.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {order && (
+          <section aria-labelledby="titre-suite" className="mt-14">
+            <h2 id="titre-suite" className="font-heavy text-sm uppercase tracking-[0.2em]">Et maintenant ?</h2>
+            <ol className="mt-6">
+              {steps.map((s, i) => (
+                <li key={s.title} className="relative flex gap-4 pb-6 last:pb-0">
+                  {i < steps.length - 1 && <span className="absolute left-[0.7rem] top-6 h-full w-px bg-line" aria-hidden="true" />}
+                  <span
+                    className={`relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border text-xs ${s.done ? "border-sun bg-sun text-night" : "border-line bg-night text-muted"}`}
+                    aria-hidden="true"
+                  >
+                    {s.done ? "✓" : i + 1}
+                  </span>
+                  <div>
+                    <p className="font-bold">{s.title}</p>
+                    <p className="text-sm text-muted">{s.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         <p className="mt-10 rounded-3xl border border-line p-5 text-sm text-muted">
           Une question sur ta commande ? Réponds à l&apos;e-mail de confirmation, ou écris-nous sur{" "}
@@ -182,8 +205,8 @@ export default async function Merci({ searchParams }: PageProps<"/merci">) {
         </p>
 
         <div className="mt-10 text-center">
-          <Link href="/" className="btn btn-primary !pr-2.5">
-            Retour au site
+          <Link href={giveUp ? "/#pieces" : "/"} className="btn btn-primary !pr-2.5">
+            {giveUp ? "Retourner à la boutique" : "Retour au site"}
             <span className="btn-disc" aria-hidden="true">→</span>
           </Link>
         </div>

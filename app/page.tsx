@@ -41,7 +41,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <div className="flex items-center justify-center md:col-start-2 md:row-span-2 md:row-start-1">
           {drop.designs.map((d, i) => (
             <Link key={d.id} href={`/pieces/${d.id}`} className={`relative aspect-[5/4] w-[54%] shrink-0 ${i === 0 ? "" : "-ml-[8%]"}`}>
-              <Image src={d.images.back} alt={d.alt.back} fill priority={i === 0} sizes="(min-width: 768px) 28vw, 54vw" className="object-contain" />
+              <Image src={d.images.back} alt={d.alt.back} fill preload={i === 0} fetchPriority={i === 0 ? "high" : undefined} sizes="(min-width: 768px) 28vw, 54vw" className="object-contain" />
             </Link>
           ))}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CART_STORAGE_KEY } from "@/components/CartProvider";
 
 /** Vide le panier mémorisé : la commande est payée. */
@@ -16,17 +16,28 @@ export function ClearCart() {
   return null;
 }
 
-/** La confirmation de SumUp peut prendre quelques secondes : on recharge la page jusqu'à 6 fois. */
+/**
+ * La confirmation de SumUp peut prendre quelques secondes : on recharge la page jusqu'à 6 fois,
+ * en comptant les essais dans l'URL (paramètre « t ») pour que le serveur sache quand renoncer
+ * et proposer autre chose qu'une attente infinie (voir app/merci/page.tsx).
+ */
 export function AutoRefresh({ every = 3000, times = 6 }: { every?: number; times?: number }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   useEffect(() => {
-    let n = 0;
+    let n = Number(searchParams.get("t") ?? 0);
     const id = setInterval(() => {
-      router.refresh();
-      if (++n >= times) clearInterval(id);
+      n += 1;
+      const next = new URLSearchParams(searchParams.toString());
+      next.set("t", String(n));
+      router.replace(`${pathname}?${next.toString()}`);
+      if (n >= times) clearInterval(id);
     }, every);
     return () => clearInterval(id);
-  }, [router, every, times]);
+    // searchParams n'est lu qu'au départ (n s'incrémente lui-même) : le rajouter en dépendance relancerait la boucle à chaque tick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, pathname, every, times]);
   return null;
 }
 

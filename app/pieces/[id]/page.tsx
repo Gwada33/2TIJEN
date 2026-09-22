@@ -8,7 +8,7 @@ import { PhotoTile } from "@/components/PhotoTile";
 import { SizeGuide } from "@/components/SizeGuide";
 import { StoreShell } from "@/components/StoreShell";
 import { siteUrl } from "@/lib/env";
-import { formatEuros } from "@/lib/format";
+import { estimatedDelivery, formatDay, formatEuros } from "@/lib/format";
 import { loadStorefront } from "@/lib/storefront";
 
 export async function generateMetadata({ params }: PageProps<"/pieces/[id]">): Promise<Metadata> {
@@ -27,6 +27,7 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
   // Photos portées de CETTE pièce. Sans photo fournie : tuiles provisoires en développement seulement.
   const worn = design.photos.length ? design.photos : process.env.NODE_ENV !== "production" ? [undefined, undefined] : [];
   const other = drop.designs.find((d) => d.id !== design.id);
+  const { from, to } = estimatedDelivery();
   const availability = store.mode === "closed" || cartDesign.stock.left === 0 ? "OutOfStock" : "PreOrder";
 
   return (
@@ -60,9 +61,10 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
           {[
             { src: design.images.back, alt: design.alt.back },
             { src: design.images.front, alt: design.alt.front },
-          ].map((v) => (
+          ].map((v, i) => (
             <div key={v.src} className="relative aspect-[4/5] w-[86%] shrink-0 snap-center md:w-auto">
-              <Image src={v.src} alt={v.alt} fill priority sizes="(min-width: 768px) 30vw, 86vw" className="object-contain p-2" />
+              {/* Seule la 1re photo (visible par défaut) est prioritaire : la 2de est hors écran au chargement. */}
+              <Image src={v.src} alt={v.alt} fill preload={i === 0} fetchPriority={i === 0 ? "high" : undefined} sizes="(min-width: 768px) 30vw, 86vw" className="object-contain p-2" />
             </div>
           ))}
           {worn.map((photo, i) => (
@@ -80,6 +82,9 @@ export default async function PiecePage({ params, searchParams }: PageProps<"/pi
           <div className="mt-8">
             <ProductBuy design={cartDesign} sizes={[...SIZES]} mode={store.mode} price={formatEuros(store.unit.amount)} lowStock={drop.lowStockThreshold} />
           </div>
+          {store.mode === "open" && (
+            <p className="mt-3 text-xs text-muted">Précommande · livraison estimée {formatDay(from)} – {formatDay(to, true)}</p>
+          )}
           {other && (
             <Link href={`/pieces/${other.id}`} className="mt-8 flex min-h-11 items-center justify-between border-t border-line pt-4 text-sm text-muted hover:text-ink">
               <span>{other.name}</span>

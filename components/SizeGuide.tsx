@@ -21,7 +21,8 @@ export function SizeGuide() {
               ))}
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-muted">[MESURES À CONFIRMER]</p>
+          {/* Rappel pour toi seul(e) : reste invisible pour les acheteurs (voir README, mesures à faire confirmer par le fournisseur). */}
+          {process.env.NODE_ENV !== "production" && <p className="mt-3 text-xs text-orange">[MESURES À CONFIRMER]</p>}
         </div>
       </details>
     </section>
