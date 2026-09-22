@@ -27,13 +27,21 @@ const FONTS: Font[] = [
   { family: "'Courier New', Courier, monospace", weight: 700, size: 0.95 },
 ];
 
-// Couleurs des papiers, tirées des t-shirts.
+// Couleurs des papiers : palette resserrée façon sérigraphie (encres un peu rabattues, pas de
+// néon), pour que les lettres se répondent au lieu de piocher au hasard dans toutes les teintes.
 const PAPERS = [
-  "#d7bc4b", "#b5549f", "#ece8df", "#285db2", "#2e9c2e", "#b8512c", "#40959b",
-  "#f6dcea", "#e2443a", "#acdaed", "#7b3fa0", "#f2a33a", "#141416", "#ffffff",
+  "#e8b23d", // or
+  "#d1552e", // corail brûlé
+  "#a83f7a", // magenta profond
+  "#6b3a68", // prune
+  "#23548f", // bleu océan
+  "#2f7d3a", // vert palme
+  "#2f8a86", // sarcelle
+  "#f0e6d2", // crème papier
+  "#171512", // encre
 ];
-const INKS = ["#0a0a0b", "#ffffff", "#ece8df", "#d7bc4b", "#285db2", "#8f3a7d", "#b8512c", "#2e9c2e", "#e2443a", "#141416"];
-const BORDERS = ["#ffffff", "#ece8df", "#0a0a0b", "#d7bc4b", "#acdaed", "#f6dcea"];
+const INKS = ["#171512", "#f7f3ea", "#e8b23d", "#f0e6d2", "#d1552e", "#23548f", "#2f7d3a", "#a83f7a"];
+const BORDERS = ["#f7f3ea", "#f0e6d2", "#171512", "#e8b23d", "#2f8a86"];
 
 /**
  * Style final de chaque lettre (dans l'ordre du texte, espaces ignorés) : mêmes couleurs
@@ -42,25 +50,25 @@ const BORDERS = ["#ffffff", "#ece8df", "#0a0a0b", "#d7bc4b", "#acdaed", "#f6dcea
 type FinalStyle = { paper: string; ink: string; ring?: string; double?: boolean; font: number; lower?: boolean; shape?: string };
 const FINAL_STYLES: FinalStyle[] = [
   // CARIBBEAN
-  { paper: "#f6dcea", ink: "#8f3a7d", ring: "#b5549f", font: 0 },
-  { paper: "#b8512c", ink: "#ffffff", font: 6 },
-  { paper: "#d7bc4b", ink: "#0a0a0b", ring: "#ffffff", font: 0 },
-  { paper: "#ece8df", ink: "#0a0a0b", font: 2 },
-  { paper: "#7b3fa0", ink: "#ffffff", ring: "#ece8df", double: true, font: 1 },
-  { paper: "#285db2", ink: "#ffffff", font: 0 },
-  { paper: "#ece8df", ink: "#b5549f", ring: "#b5549f", font: 6 },
-  { paper: "#40959b", ink: "#ffffff", ring: "#ffffff", font: 2 },
-  { paper: "#d7bc4b", ink: "#0a0a0b", font: 0 },
+  { paper: "#f0e6d2", ink: "#6b3a68", ring: "#a83f7a", font: 0 },
+  { paper: "#d1552e", ink: "#f7f3ea", font: 6 },
+  { paper: "#e8b23d", ink: "#171512", ring: "#f7f3ea", font: 0 },
+  { paper: "#f0e6d2", ink: "#171512", font: 2 },
+  { paper: "#6b3a68", ink: "#f7f3ea", ring: "#f0e6d2", double: true, font: 1 },
+  { paper: "#23548f", ink: "#f7f3ea", font: 0 },
+  { paper: "#f0e6d2", ink: "#a83f7a", ring: "#a83f7a", font: 6 },
+  { paper: "#2f8a86", ink: "#f7f3ea", ring: "#f7f3ea", font: 2 },
+  { paper: "#e8b23d", ink: "#171512", font: 0 },
   // REPRESENT
-  { paper: "#2e9c2e", ink: "#ffffff", ring: "#ece8df", double: true, font: 6 },
-  { paper: "#d7bc4b", ink: "#7b3fa0", font: 0 },
-  { paper: "#285db2", ink: "#ece8df", font: 2 },
-  { paper: "#d7bc4b", ink: "#0a0a0b", ring: "#ffffff", font: 6, lower: true },
-  { paper: "#acdaed", ink: "#0a0a0b", font: 0, lower: true, shape: "ellipse(50% 50% at 50% 50%)" },
-  { paper: "#40959b", ink: "#ffffff", font: 6 },
-  { paper: "#ece8df", ink: "#0a0a0b", ring: "#d7bc4b", font: 0 },
-  { paper: "#7b3fa0", ink: "#ffffff", font: 1 },
-  { paper: "#2e9c2e", ink: "#ffffff", ring: "#ece8df", font: 6 },
+  { paper: "#2f7d3a", ink: "#f7f3ea", ring: "#f0e6d2", double: true, font: 6 },
+  { paper: "#e8b23d", ink: "#6b3a68", font: 0 },
+  { paper: "#23548f", ink: "#f0e6d2", font: 2 },
+  { paper: "#e8b23d", ink: "#171512", ring: "#f7f3ea", font: 6, lower: true },
+  { paper: "#2f8a86", ink: "#171512", font: 0, lower: true, shape: "ellipse(50% 50% at 50% 50%)" },
+  { paper: "#2f8a86", ink: "#f7f3ea", font: 6 },
+  { paper: "#f0e6d2", ink: "#171512", ring: "#e8b23d", font: 0 },
+  { paper: "#6b3a68", ink: "#f7f3ea", font: 1 },
+  { paper: "#2f7d3a", ink: "#f7f3ea", ring: "#f0e6d2", font: 6 },
 ];
 
 type Tile = {
@@ -98,15 +106,45 @@ const contrast = (a: string, b: string) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-/** Forme découpée au hasard, en pourcentages de la boîte. */
+/** Redécoupe chaque arête d'un polygone avec 1 ou 2 points intermédiaires décalés perpendiculairement :
+ * l'arête droite devient un bord déchiré, comme un morceau de papier arraché à la main. */
+function tornEdges(r: Rand, pts: [number, number][], jag: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[(i + 1) % pts.length];
+    out.push([x1, y1]);
+    const segs = 1 + Math.floor(r() * 2);
+    const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+    const nx = -(y2 - y1) / len;
+    const ny = (x2 - x1) / len;
+    for (let s = 1; s <= segs; s++) {
+      const t = s / (segs + 1);
+      const j = between(r, -jag, jag);
+      out.push([x1 + (x2 - x1) * t + nx * j, y1 + (y2 - y1) * t + ny * j]);
+    }
+  }
+  return out;
+}
+
+/** Forme découpée au hasard, en pourcentages de la boîte : la plupart du temps un bord déchiré. */
 function randomShape(r: Rand): string {
   const roll = r();
-  if (roll < 0.1) return "ellipse(50% 50% at 50% 50%)";
-  if (roll < 0.18) return "inset(0 round 32%)";
-  if (roll < 0.28) {
+  if (roll < 0.08) return "ellipse(50% 50% at 50% 50%)";
+  if (roll < 0.14) return "inset(0 round 32%)";
+  if (roll < 0.24) {
     // pointe vers le haut, comme certains papiers du t-shirt Martinican
     const j = () => between(r, -3, 3);
-    return `polygon(${50 + j()}% 0%, ${100 - Math.abs(j())}% ${20 + j()}%, ${100 - Math.abs(j())}% 100%, ${Math.abs(j())}% 100%, ${Math.abs(j())}% ${20 + j()}%)`;
+    const pts: [number, number][] = [
+      [50 + j(), 0],
+      [100 - Math.abs(j()), 20 + j()],
+      [100 - Math.abs(j()), 100],
+      [Math.abs(j()), 100],
+      [Math.abs(j()), 20 + j()],
+    ];
+    return `polygon(${tornEdges(r, pts, 2.5)
+      .map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`)
+      .join(", ")})`;
   }
   // polygone irrégulier : coins et milieux d'arêtes décalés, un coin parfois coupé
   const m = 10;
@@ -129,7 +167,10 @@ function randomShape(r: Rand): string {
     const c = Math.floor(r() * kept.length);
     kept[c] = [kept[c][0] + (kept[c][0] < 50 ? 14 : -14), kept[c][1] + (kept[c][1] < 50 ? 4 : -4)];
   }
-  return `polygon(${kept.map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`).join(", ")})`;
+  // bord arraché plutôt que droit sur le pourtour restant
+  return `polygon(${tornEdges(r, kept, 3.2)
+    .map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`)
+    .join(", ")})`;
 }
 
 function randomTile(r: Rand, ch: string, rot: number): Tile {
@@ -237,7 +278,7 @@ export function Ransom({ text, tag, className = "" }: { text: string; tag?: stri
                 }}
               >
                 {t.rings.map((color, k) => (
-                  <span key={k} className="absolute" style={{ inset: `${k * t.ringStep}em`, background: color, clipPath: t.shape }} />
+                  <span key={k} className="ransom-paper absolute" style={{ inset: `${k * t.ringStep}em`, backgroundColor: color, clipPath: t.shape }} />
                 ))}
                 <span
                   className={`absolute grid place-items-center leading-none ${index < settled ? "ransom-pop" : ""}`}
