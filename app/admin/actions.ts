@@ -8,6 +8,7 @@ import { sendEarlyAccess } from "@/lib/email";
 import { formatDateTime } from "@/lib/format";
 import { opensAt } from "@/lib/drop-state";
 import { allowRequest } from "@/lib/rate-limit";
+import { refundTransaction } from "@/lib/sumup";
 import { db } from "@/lib/supabase";
 
 export async function login(_prev: { error: string } | null, formData: FormData) {
@@ -44,5 +45,25 @@ export async function sendEarlyAccessLinks(): Promise<void> {
       console.error("sendEarlyAccess", w.email, e);
     }
   }
+  revalidatePath("/admin");
+}
+
+/**
+ * Rembourse manuellement une commande « à rembourser » (le remboursement automatique a échoué).
+ * Ne fait rien si la commande n'a pas de transaction (paiement jamais confirmé) : à traiter à la main.
+ */
+export async function refundOrder(formData: FormData): Promise<void> {
+  if (!(await isAdmin())) redirect("/admin");
+  const orderId = String(formData.get("orderId") ?? "");
+  const transactionId = String(formData.get("transactionId") ?? "");
+  if (!orderId || !transactionId) return;
+  try {
+    await refundTransaction(transactionId);
+  } catch (e) {
+    console.error("refundOrder", orderId, e);
+    redirect(`/admin?refundError=${encodeURIComponent(orderId)}`);
+  }
+  const { error } = await db().from("orders").update({ status: "refunded" }).eq("id", orderId);
+  if (error) throw new Error(error.message);
   revalidatePath("/admin");
 }

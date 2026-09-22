@@ -5,6 +5,8 @@ import { db } from "@/lib/supabase";
 
 export type AdminOrder = {
   id: string;
+  checkout_id: string;
+  transaction_id: string | null;
   drop_name: string | null;
   created_at: string;
   name: string | null;
@@ -19,12 +21,21 @@ export type AdminOrder = {
   order_items: { design_id: string; size: string; piece_number: number; unit_amount: number; early_bird: boolean; pack: boolean }[];
 };
 
+export type AdminWaitlistRow = {
+  id: string;
+  email: string;
+  whatsapp: string | null;
+  created_at: string;
+  access_sent_at: string | null;
+  unsubscribed_at: string | null;
+};
+
 export async function loadAdminData() {
   const [orders, designs, stock, waitlist] = await Promise.all([
     db().from("orders").select("*, order_items(design_id, size, piece_number, unit_amount, early_bird, pack)").order("created_at", { ascending: false }),
     db().from("designs").select("*"),
     db().from("stock_status").select("*"),
-    db().from("waitlist").select("id, unsubscribed_at, access_sent_at"),
+    db().from("waitlist").select("id, email, whatsapp, created_at, access_sent_at, unsubscribed_at").order("created_at", { ascending: false }),
   ]);
   for (const r of [orders, designs, stock, waitlist]) if (r.error) throw new Error(r.error.message);
 
@@ -47,6 +58,8 @@ export async function loadAdminData() {
 
   const pieces = paid.flatMap((o) => o.order_items);
   const earlyUsed = pieces.filter((i) => i.early_bird).length;
+  const revenue = paid.reduce((n, o) => n + o.amount_total, 0);
+  const discountGiven = paid.reduce((n, o) => n + (o.discount_amount ?? 0), 0);
 
   const stockRows = (stock.data ?? []) as { design_id: string; size: string; total: number; sold: number; reserved: number; available: number }[];
   const stockByDesign = drop.designs.map((d) => ({
@@ -55,7 +68,7 @@ export async function loadAdminData() {
     sizes: SIZES.map((s) => stockRows.find((r) => r.design_id === d.id && r.size === s) ?? { design_id: d.id, size: s, total: 0, sold: 0, reserved: 0, available: 0 }),
   }));
 
-  const wl = waitlist.data ?? [];
+  const wl = (waitlist.data ?? []) as AdminWaitlistRow[];
   const now = getNow();
   return {
     orders: allOrders,
@@ -63,12 +76,17 @@ export async function loadAdminData() {
     totalOrders: paid.length,
     thresholdReached: paid.length >= drop.production.minOrders && perDesign.every((d) => d.ordersOk),
     stockByDesign,
+    revenue,
+    piecesSold: pieces.length,
+    avgBasket: paid.length ? Math.round(revenue / paid.length) : 0,
+    discountGiven,
     earlyBird: {
       used: earlyUsed,
       max: drop.earlyBird.maxPieces,
       active: now < earlyBirdEndsAt() && pieces.length < drop.earlyBird.maxPieces,
     },
     waitlist: {
+      rows: wl,
       active: wl.filter((w) => !w.unsubscribed_at).length,
       unsubscribed: wl.filter((w) => w.unsubscribed_at).length,
       accessSent: wl.filter((w) => w.access_sent_at && !w.unsubscribed_at).length,
@@ -79,3 +97,16 @@ export async function loadAdminData() {
 
 export const formatAddress = (a: AdminOrder["shipping_address"]) =>
   a ? [a.line1, a.line2, a.postal_code, a.city, a.country].filter(Boolean).join(", ") : "";
+
+/** Une commande correspond-elle à la recherche (nom, e-mail, téléphone, taille) ? Insensible à la casse/accents. */
+export function matchesOrderSearch(o: AdminOrder, query: string): boolean {
+  const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  const q = norm(query.trim());
+  if (!q) return true;
+  const haystack = norm(
+    [o.name, o.email, o.phone, o.promo_code, ...o.order_items.map((i) => `${drop.designs.find((d) => d.id === i.design_id)?.name} ${i.size}`)]
+      .filter(Boolean)
+      .join(" "),
+  );
+  return haystack.includes(q);
+}

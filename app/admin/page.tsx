@@ -1,16 +1,18 @@
 import { drop } from "@/config/drop";
 import { isAdmin } from "@/lib/admin-auth";
-import { formatAddress, loadAdminData } from "@/lib/admin-data";
+import { formatAddress, loadAdminData, matchesOrderSearch } from "@/lib/admin-data";
 import { getNow } from "@/lib/drop-state";
 import { formatEuros } from "@/lib/format";
 import { formatPieceNumber } from "@/lib/email";
-import { logout, sendEarlyAccessLinks } from "./actions";
+import { logout, refundOrder, sendEarlyAccessLinks } from "./actions";
 import { LoginForm } from "./LoginForm";
 
 const STATUS: Record<string, string> = { paid: "Payée", needs_refund: "À REMBOURSER", refunded: "Remboursée" };
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   if (!(await isAdmin())) return <LoginForm />;
+  const { q, refundError } = await searchParams;
+  const query = typeof q === "string" ? q : "";
 
   let data;
   try {
@@ -21,6 +23,7 @@ export default async function AdminPage() {
   const totals = new Map(drop.designs.map((d) => [d.id, Object.values(d.stock).reduce((a, b) => a + b, 0)]));
   const fmt = (iso: string) => new Date(iso).toLocaleString("fr-FR", { timeZone: "America/Guadeloupe", dateStyle: "short", timeStyle: "short" });
   const box = "rounded-3xl border border-line bg-surface p-6";
+  const visibleOrders = data.orders.filter((o) => matchesOrderSearch(o, query));
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
@@ -35,9 +38,28 @@ export default async function AdminPage() {
 
       {data.needsRefund > 0 && (
         <p role="alert" className="rounded-3xl bg-orange p-5 font-bold text-night">
-          {data.needsRefund} commande(s) payée(s) alors que le stock était épuisé : à rembourser dans SumUp.
+          {data.needsRefund} commande(s) payée(s) alors que le stock était épuisé : à rembourser (bouton « Rembourser » dans le tableau, ou dans SumUp).
         </p>
       )}
+
+      <section aria-label="Chiffres clés (drop en cours)" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className={box}>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Chiffre d&apos;affaires</p>
+          <p className="mt-1 text-2xl font-black">{formatEuros(data.revenue)}</p>
+        </div>
+        <div className={box}>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Pièces vendues</p>
+          <p className="mt-1 text-2xl font-black">{data.piecesSold}</p>
+        </div>
+        <div className={box}>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Panier moyen</p>
+          <p className="mt-1 text-2xl font-black">{data.totalOrders ? formatEuros(data.avgBasket) : "—"}</p>
+        </div>
+        <div className={box}>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Remises accordées</p>
+          <p className="mt-1 text-2xl font-black">{formatEuros(data.discountGiven)}</p>
+        </div>
+      </section>
 
       <section aria-labelledby="seuil" className={box}>
         <h2 id="seuil" className="text-xl font-black">Seuil de fabrication</h2>
@@ -74,6 +96,26 @@ export default async function AdminPage() {
             <button className="btn btn-primary !min-h-11" type="submit">Envoyer les liens d&apos;accès anticipé</button>
             <p className="mt-2 text-sm text-muted">Envoie le lien à ceux qui ne l&apos;ont pas encore reçu (100 max par clic). Le lien ne fonctionne que dans les {drop.earlyAccessHours} h avant l&apos;ouverture.</p>
           </form>
+          {data.waitlist.rows.length > 0 && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-sm font-bold underline underline-offset-4">Voir les inscrits ({data.waitlist.rows.length})</summary>
+              <div className="mt-3 max-h-80 overflow-y-auto">
+                <table className="w-full text-left text-sm">
+                  <thead><tr className="border-b border-line"><th className="py-1 pr-3">E-mail</th><th className="pr-3">WhatsApp</th><th className="pr-3">Inscrit le</th><th>Statut</th></tr></thead>
+                  <tbody>
+                    {data.waitlist.rows.map((w) => (
+                      <tr key={w.id} className="border-b border-line">
+                        <td className="py-1 pr-3">{w.email}</td>
+                        <td className="pr-3">{w.whatsapp || "—"}</td>
+                        <td className="pr-3 whitespace-nowrap">{fmt(w.created_at)}</td>
+                        <td>{w.unsubscribed_at ? "Désinscrit" : w.access_sent_at ? "Accès envoyé" : "En attente"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
         </section>
       </div>
 
@@ -99,12 +141,26 @@ export default async function AdminPage() {
       </section>
 
       <section aria-labelledby="orders" className={box}>
-        <h2 id="orders" className="text-xl font-black">Commandes ({data.orders.length})</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="orders" className="text-xl font-black">Commandes ({visibleOrders.length}{query ? ` / ${data.orders.length}` : ""})</h2>
+          <form method="get" className="flex items-center gap-2">
+            <label htmlFor="q" className="sr-only">Rechercher une commande</label>
+            <input
+              id="q"
+              name="q"
+              type="search"
+              defaultValue={query}
+              placeholder="Nom, e-mail, téléphone, taille, code promo…"
+              className="min-h-11 w-64 max-w-full rounded-2xl border-2 border-line bg-night px-4 text-sm text-ink focus:border-sun focus:outline-none"
+            />
+            <button type="submit" className="btn btn-ghost !min-h-11">Chercher</button>
+          </form>
+        </div>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[60rem] text-left text-sm">
             <thead><tr className="border-b-2 border-ink/60"><th className="py-2 pr-3">Date</th><th className="pr-3">Client</th><th className="pr-3">Livraison</th><th className="pr-3">Pièces</th><th className="pr-3">Montant</th><th>Statut</th></tr></thead>
             <tbody>
-              {data.orders.map((o) => (
+              {visibleOrders.map((o) => (
                 <tr key={o.id} className="border-b border-line align-top">
                   <td className="py-2 pr-3 whitespace-nowrap">{fmt(o.created_at)}</td>
                   <td className="pr-3">{o.name}<br /><span className="text-muted">{o.email}{o.phone ? ` · ${o.phone}` : ""}</span></td>
@@ -118,10 +174,20 @@ export default async function AdminPage() {
                     ))}
                   </td>
                   <td className="pr-3 font-bold">{formatEuros(o.amount_total)}{o.promo_code && <><br /><span className="font-normal text-muted">{o.promo_code} (−{formatEuros(o.discount_amount ?? 0)})</span></>}</td>
-                  <td className={o.status === "paid" ? "" : "font-bold text-orange"}>{STATUS[o.status] ?? o.status}</td>
+                  <td className={o.status === "paid" ? "" : "font-bold text-orange"}>
+                    {STATUS[o.status] ?? o.status}
+                    {o.status === "needs_refund" && o.transaction_id && (
+                      <form action={refundOrder} className="mt-1">
+                        <input type="hidden" name="orderId" value={o.id} />
+                        <input type="hidden" name="transactionId" value={o.transaction_id} />
+                        <button type="submit" className="btn btn-ghost !min-h-9 !px-3 !text-xs">Rembourser</button>
+                      </form>
+                    )}
+                    {refundError === o.id && <p role="alert" className="mt-1 text-xs font-bold text-orange">Échec, réessaie ou rembourse dans SumUp.</p>}
+                  </td>
                 </tr>
               ))}
-              {data.orders.length === 0 && <tr><td colSpan={6} className="py-6 text-muted">Aucune commande pour l&apos;instant.</td></tr>}
+              {visibleOrders.length === 0 && <tr><td colSpan={6} className="py-6 text-muted">{query ? "Aucune commande ne correspond." : "Aucune commande pour l'instant."}</td></tr>}
             </tbody>
           </table>
         </div>
