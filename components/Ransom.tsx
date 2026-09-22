@@ -213,6 +213,10 @@ function finalTile(ch: string, index: number, rot: number): Tile {
 }
 
 const ROTATIONS = [-3.5, 2.5, -1.5, 3.5, -2.5, 1.5, -1, 3];
+// Léger décalage vertical par lettre (n'affecte que le rendu, pas la boîte) : donne l'irrégularité
+// d'un vrai collage de lettres découpées dans des magazines différents, plutôt qu'un alignement au cordeau.
+const LIFTS = [-0.05, 0.04, -0.02, 0.05, 0.01, -0.045, 0.03, -0.015, 0.045, -0.03];
+const lift = (i: number) => LIFTS[(i * 7 + 3) % LIFTS.length];
 const FRAME_MS = 90; // vitesse du défilement des styles
 const START_MS = 700; // la première lettre se fixe après 0,7 s
 const STEP_MS = 90; // puis une lettre toutes les 90 ms
@@ -235,23 +239,16 @@ export function Ransom({ text, tag, className = "" }: { text: string; tag?: stri
       }, 0);
       return () => clearTimeout(id);
     }
-    // L'animation démarre une fois la page chargée : elle ne ralentit pas l'affichage de l'image principale.
-    let id: ReturnType<typeof setInterval> | undefined;
-    const start = () => {
-      const t0 = performance.now();
-      id = setInterval(() => {
-        const count = Math.min(chars.length, Math.max(0, Math.floor((performance.now() - t0 - START_MS) / STEP_MS) + 1));
-        setSettled(count);
-        setTiles(chars.map((ch, i) => (i < count ? finals[i] : randomTile(Math.random, ch, rot(i)))));
-        if (count >= chars.length) clearInterval(id);
-      }, FRAME_MS);
-    };
-    if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
-    return () => {
-      clearInterval(id);
-      window.removeEventListener("load", start);
-    };
+    // L'animation démarre dès l'arrivée sur la page : les mises à jour ne touchent que de petites
+    // tuiles de texte (pas l'image principale), donc pas besoin d'attendre la fin du chargement.
+    const t0 = performance.now();
+    const id = setInterval(() => {
+      const count = Math.min(chars.length, Math.max(0, Math.floor((performance.now() - t0 - START_MS) / STEP_MS) + 1));
+      setSettled(count);
+      setTiles(chars.map((ch, i) => (i < count ? finals[i] : randomTile(Math.random, ch, rot(i)))));
+      if (count >= chars.length) clearInterval(id);
+    }, FRAME_MS);
+    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
@@ -271,6 +268,7 @@ export function Ransom({ text, tag, className = "" }: { text: string; tag?: stri
                 style={{
                   ["--r" as string]: `${t.rot}deg`,
                   ["--s" as string]: t.scale,
+                  ["--y" as string]: `${lift(index)}em`,
                   ["--i" as string]: index,
                   width: "1.08em",
                   height: "1.28em",
