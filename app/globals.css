@@ -135,22 +135,6 @@ body {
 }
 .ransom-pop { animation: pop 0.3s cubic-bezier(0.3, 1.6, 0.5, 1); }
 
-/* Fond des cartes produit : le mot 2TIJEN répété en motif discret (même teinte que le fond,
-   juste assombri), en losange, comme un papier de marque plutôt qu'un simple aplat. */
-.card-tee-bg { position: relative; isolation: isolate; }
-.card-tee-bg::before {
-  content: "";
-  position: absolute;
-  inset: -35%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='100'%3E%3Ctext x='4' y='38' font-family='Arial, sans-serif' font-weight='700' font-size='24' letter-spacing='3' fill='%23171310' fill-opacity='0.22'%3E2TIJEN%3C/text%3E%3Ctext x='94' y='88' font-family='Arial, sans-serif' font-weight='700' font-size='24' letter-spacing='3' fill='%23171310' fill-opacity='0.22'%3E2TIJEN%3C/text%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 80px 44px;
-  transform: rotate(-12deg);
-  mix-blend-mode: multiply;
-  opacity: 0.4;
-  pointer-events: none;
-}
-
 /* ---------- Retournement du t-shirt (face / dos) ---------- */
 .flip-stage { perspective: 1200px; }
 .flip-card {

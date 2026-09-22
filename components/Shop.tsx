@@ -97,8 +97,8 @@ function ProductCard(props: {
         <Link
           href={href}
           aria-label={`${d.name} : voir la pièce`}
-          className="card-tee-bg relative block aspect-[5/4] w-full overflow-hidden"
-          style={{ backgroundColor: d.backdrop }}
+          className="relative block aspect-[5/4] w-full overflow-hidden"
+          style={{ backgroundColor: `color-mix(in srgb, ${d.backdrop} 18%, var(--color-night))` }}
           onPointerEnter={(e) => { if (e.pointerType === "mouse") setFlipped(true); }}
           onPointerLeave={(e) => { if (e.pointerType === "mouse") setFlipped(false); }}
         >
